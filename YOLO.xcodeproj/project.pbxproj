@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -66,7 +66,7 @@
 		483A287A2FB36EB1D0BCF0DB /* gentle_chime.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = gentle_chime.mp3; sourceTree = "<group>"; };
 		5252F78A4580C563777D2634 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		5B2AE90F7CDFD0B118A76057 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
-		68D236FC3078D226D8A9182E /* yolo-logo-white.svg */ = {isa = PBXFileReference; lastKnownFileType = text; path = "yolo-logo-white.svg"; sourceTree = "<group>"; };
+		68D236FC3078D226D8A9182E /* yolo-logo-white.svg */ = {isa = PBXFileReference; path = "yolo-logo-white.svg"; sourceTree = "<group>"; };
 		6AB00AD129BC06E29F47747F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		6B12EE727303E0C80577C4BB /* YOLOWidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOWidgetsBundle.swift; sourceTree = "<group>"; };
 		73524256F01FEEDDA704949F /* YOLOLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOLiveActivityWidget.swift; sourceTree = "<group>"; };
@@ -78,7 +78,7 @@
 		AA6E5AF57EBD45C4A11B7113 /* MonitoringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringView.swift; sourceTree = "<group>"; };
 		B8BA4475E65AE5F96606A011 /* AudioMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMonitor.swift; sourceTree = "<group>"; };
 		C54D59ED07BEF1339DA030C6 /* YOLOLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOLogo.swift; sourceTree = "<group>"; };
-		C9B5D31683D871C13A415642 /* YOLOWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = YOLOWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9B5D31683D871C13A415642 /* YOLOWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = YOLOWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC9337F8CD1A0C79F2DEC665 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		D0A5D1D4A4D94280BAA7550E /* YOLOLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOLiveActivity.swift; sourceTree = "<group>"; };
 		D88CC6A4FF76AC789EC99507 /* ocean_waves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = ocean_waves.mp3; sourceTree = "<group>"; };
@@ -269,6 +269,7 @@
 			);
 			mainGroup = 792A5E5B66577CEBE642791B;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -401,19 +402,11 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = YOLOWidgets/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.yolo.app.widgets;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.wakeyolo.app.widgets;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -495,7 +488,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.yolo.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wakeyolo.app;
 				SDKROOT = iphoneos;
 				SUPPORTS_LIVE_ACTIVITIES = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -514,7 +507,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.yolo.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wakeyolo.app;
 				SDKROOT = iphoneos;
 				SUPPORTS_LIVE_ACTIVITIES = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -526,19 +519,11 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = YOLOWidgets/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.yolo.app.widgets;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.wakeyolo.app.widgets;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};

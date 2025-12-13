@@ -1,6 +1,6 @@
 name: YOLO
 options:
-  bundleIdPrefix: com.yolo
+  bundleIdPrefix: com.wakeyolo
   deploymentTarget:
     iOS: "17.0"
   xcodeVersion: "15.0"
@@ -37,7 +37,7 @@ targets:
       - path: YOLO/Resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.yolo.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.wakeyolo.app
         INFOPLIST_FILE: YOLO/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SUPPORTS_LIVE_ACTIVITIES: YES
@@ -79,7 +79,7 @@ targets:
       - path: YOLO/Models/YOLOActivityAttributes.swift
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.yolo.app.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.wakeyolo.app.widgets
         INFOPLIST_FILE: YOLOWidgets/Info.plist
         SKIP_INSTALL: YES
         CODE_SIGN_STYLE: Automatic
