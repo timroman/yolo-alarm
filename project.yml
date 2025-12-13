@@ -61,7 +61,6 @@ targets:
           - UIInterfaceOrientationLandscapeRight
         UIBackgroundModes:
           - audio
-          - processing
         NSMicrophoneUsageDescription: "yolo alarm needs microphone access to detect when you start moving around during your wake window."
         NSSupportsLiveActivities: true
     entitlements:
