@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "specweave": {
+      "command": "npx",
+      "args": ["-y", "@specweave/mcp-client"],
+      "env": {
+        "SPECWEAVE_TOKEN": "8jP9mlJTA8ZsAsUSJGShZETka3V0fpeEE3w52QeC5EI"
+      }
+    }
+  }
+}

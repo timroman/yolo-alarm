@@ -1,0 +1,578 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 63;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		04B868F91FD10EC055DA10E4 /* YOLOApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F2BD412D712642C2B0956ED /* YOLOApp.swift */; };
+		135AA99CB278916C6B9FDFA4 /* AlarmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBAAB7B311B09AB41F4C8F46 /* AlarmView.swift */; };
+		24F300F7AEDE049699D34395 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9337F8CD1A0C79F2DEC665 /* OnboardingView.swift */; };
+		257838B5FDF03B711AFAD992 /* CustomSoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BC0524499E8EE1D1030D0E /* CustomSoundManager.swift */; };
+		275F15D4586798DBC2ADA453 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D296D0D4FBD537EEB7562E0 /* ContentView.swift */; };
+		2B45F02EB8C502FD0BA531CF /* YOLOLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5D1D4A4D94280BAA7550E /* YOLOLiveActivity.swift */; };
+		39D0FCD00CD3CCBE5749F889 /* AudioMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8BA4475E65AE5F96606A011 /* AudioMonitor.swift */; };
+		4B647295E6BFF7953C5B451B /* YOLOWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C9B5D31683D871C13A415642 /* YOLOWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5B679927135372652680BB0E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0498F987FAA25CCDE0AF61AF /* Assets.xcassets */; };
+		655B7FEEF65BF622EF1D7EB8 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B2AE90F7CDFD0B118A76057 /* SetupView.swift */; };
+		6EC51552A925EF69A3FD0BA3 /* ocean_waves.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = D88CC6A4FF76AC789EC99507 /* ocean_waves.mp3 */; };
+		7A1616B95CED40BE62F16E95 /* MonitoringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6E5AF57EBD45C4A11B7113 /* MonitoringView.swift */; };
+		7CABB507F8C01E81302B364C /* YOLOActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E362506740D69909BC6FBD /* YOLOActivityAttributes.swift */; };
+		8DB8FD8FA66012858BDAC5D9 /* soft_bells.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 007AA60D4F21EE84FC5A3A89 /* soft_bells.mp3 */; };
+		9BAC37CD1435986F0035DFC0 /* YOLOActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E362506740D69909BC6FBD /* YOLOActivityAttributes.swift */; };
+		9EE5C207EC292A4171308AD9 /* yolo-logo-white.svg in Resources */ = {isa = PBXBuildFile; fileRef = 68D236FC3078D226D8A9182E /* yolo-logo-white.svg */; };
+		A5D170C294A1DB6DA960B3F2 /* AlarmSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B7EA4C29CB69104E73D77E /* AlarmSettings.swift */; };
+		AA1946B2C0CA4A1BA79B2D4B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5252F78A4580C563777D2634 /* SettingsView.swift */; };
+		AAABF79D24F0F0D506537B2A /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F9800A9CCE9BC5491EBFE1E /* AppState.swift */; };
+		CC807D9170F7F5B0CD1E5D18 /* YOLOWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B12EE727303E0C80577C4BB /* YOLOWidgetsBundle.swift */; };
+		E627F7CCD53B9B9E179A3CF0 /* AppGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B8C2A1D64226A82D5ACF0FF /* AppGradient.swift */; };
+		F390D9B656ADCD12BCEDEF1F /* YOLOLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73524256F01FEEDDA704949F /* YOLOLiveActivityWidget.swift */; };
+		FAA1221A3742755618D349AA /* gentle_chime.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 483A287A2FB36EB1D0BCF0DB /* gentle_chime.mp3 */; };
+		FAD204D9FBC24C0041DE7692 /* YOLOLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C54D59ED07BEF1339DA030C6 /* YOLOLogo.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1CE8BC4D4A833AB27D239910 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A63E6A3AA4E51FFD2C722298 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 133A64AFE669BE746293906F;
+			remoteInfo = YOLOWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7E9415582DB443E09B9BBF1A /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4B647295E6BFF7953C5B451B /* YOLOWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		007AA60D4F21EE84FC5A3A89 /* soft_bells.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = soft_bells.mp3; sourceTree = "<group>"; };
+		0498F987FAA25CCDE0AF61AF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		08E362506740D69909BC6FBD /* YOLOActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOActivityAttributes.swift; sourceTree = "<group>"; };
+		2D296D0D4FBD537EEB7562E0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		2F2BD412D712642C2B0956ED /* YOLOApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOApp.swift; sourceTree = "<group>"; };
+		483A287A2FB36EB1D0BCF0DB /* gentle_chime.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = gentle_chime.mp3; sourceTree = "<group>"; };
+		5252F78A4580C563777D2634 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		5B2AE90F7CDFD0B118A76057 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
+		68D236FC3078D226D8A9182E /* yolo-logo-white.svg */ = {isa = PBXFileReference; lastKnownFileType = text; path = "yolo-logo-white.svg"; sourceTree = "<group>"; };
+		6AB00AD129BC06E29F47747F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		6B12EE727303E0C80577C4BB /* YOLOWidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOWidgetsBundle.swift; sourceTree = "<group>"; };
+		73524256F01FEEDDA704949F /* YOLOLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOLiveActivityWidget.swift; sourceTree = "<group>"; };
+		88BC0524499E8EE1D1030D0E /* CustomSoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSoundManager.swift; sourceTree = "<group>"; };
+		8B8C2A1D64226A82D5ACF0FF /* AppGradient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGradient.swift; sourceTree = "<group>"; };
+		8F9800A9CCE9BC5491EBFE1E /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		90E880C2FE89A25730D2A317 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A3B7EA4C29CB69104E73D77E /* AlarmSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmSettings.swift; sourceTree = "<group>"; };
+		AA6E5AF57EBD45C4A11B7113 /* MonitoringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonitoringView.swift; sourceTree = "<group>"; };
+		B8BA4475E65AE5F96606A011 /* AudioMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMonitor.swift; sourceTree = "<group>"; };
+		C54D59ED07BEF1339DA030C6 /* YOLOLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOLogo.swift; sourceTree = "<group>"; };
+		C9B5D31683D871C13A415642 /* YOLOWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = YOLOWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC9337F8CD1A0C79F2DEC665 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		D0A5D1D4A4D94280BAA7550E /* YOLOLiveActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOLiveActivity.swift; sourceTree = "<group>"; };
+		D88CC6A4FF76AC789EC99507 /* ocean_waves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = ocean_waves.mp3; sourceTree = "<group>"; };
+		DBAAB7B311B09AB41F4C8F46 /* AlarmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmView.swift; sourceTree = "<group>"; };
+		DC5BCC79096288A7D9E5EE8B /* YOLO.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = YOLO.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E45F06E71564FE99837FE304 /* YOLO.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = YOLO.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		13DC65FB2A997E52847D4ED1 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				2F2BD412D712642C2B0956ED /* YOLOApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		1E2592278B32DEC60176FA82 /* YOLOWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				90E880C2FE89A25730D2A317 /* Info.plist */,
+				73524256F01FEEDDA704949F /* YOLOLiveActivityWidget.swift */,
+				6B12EE727303E0C80577C4BB /* YOLOWidgetsBundle.swift */,
+			);
+			path = YOLOWidgets;
+			sourceTree = "<group>";
+		};
+		792A5E5B66577CEBE642791B = {
+			isa = PBXGroup;
+			children = (
+				DEE096A7A6A32807F796961E /* YOLO */,
+				1E2592278B32DEC60176FA82 /* YOLOWidgets */,
+				B7CCEA8B34731F24C1923716 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A4B821B1B35176A85A54DF60 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A3B7EA4C29CB69104E73D77E /* AlarmSettings.swift */,
+				8F9800A9CCE9BC5491EBFE1E /* AppState.swift */,
+				08E362506740D69909BC6FBD /* YOLOActivityAttributes.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B73AE04F4727F07CFC2F5A9B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0498F987FAA25CCDE0AF61AF /* Assets.xcassets */,
+				68D236FC3078D226D8A9182E /* yolo-logo-white.svg */,
+				FB7B21296DA988F3ECF19BE5 /* Sounds */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		B7CCEA8B34731F24C1923716 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC5BCC79096288A7D9E5EE8B /* YOLO.app */,
+				C9B5D31683D871C13A415642 /* YOLOWidgets.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C77765C4ED5E93F6A10A1CCF /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B8BA4475E65AE5F96606A011 /* AudioMonitor.swift */,
+				88BC0524499E8EE1D1030D0E /* CustomSoundManager.swift */,
+				D0A5D1D4A4D94280BAA7550E /* YOLOLiveActivity.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		DEE096A7A6A32807F796961E /* YOLO */ = {
+			isa = PBXGroup;
+			children = (
+				6AB00AD129BC06E29F47747F /* Info.plist */,
+				E45F06E71564FE99837FE304 /* YOLO.entitlements */,
+				13DC65FB2A997E52847D4ED1 /* App */,
+				A4B821B1B35176A85A54DF60 /* Models */,
+				B73AE04F4727F07CFC2F5A9B /* Resources */,
+				C77765C4ED5E93F6A10A1CCF /* Services */,
+				E1AA37EDD4D251CCAD13CF0D /* Views */,
+			);
+			path = YOLO;
+			sourceTree = "<group>";
+		};
+		E1AA37EDD4D251CCAD13CF0D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				DBAAB7B311B09AB41F4C8F46 /* AlarmView.swift */,
+				2D296D0D4FBD537EEB7562E0 /* ContentView.swift */,
+				AA6E5AF57EBD45C4A11B7113 /* MonitoringView.swift */,
+				CC9337F8CD1A0C79F2DEC665 /* OnboardingView.swift */,
+				5252F78A4580C563777D2634 /* SettingsView.swift */,
+				5B2AE90F7CDFD0B118A76057 /* SetupView.swift */,
+				EF632EDA471BD199BC25CEAF /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		EF632EDA471BD199BC25CEAF /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				8B8C2A1D64226A82D5ACF0FF /* AppGradient.swift */,
+				C54D59ED07BEF1339DA030C6 /* YOLOLogo.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		FB7B21296DA988F3ECF19BE5 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				483A287A2FB36EB1D0BCF0DB /* gentle_chime.mp3 */,
+				D88CC6A4FF76AC789EC99507 /* ocean_waves.mp3 */,
+				007AA60D4F21EE84FC5A3A89 /* soft_bells.mp3 */,
+			);
+			path = Sounds;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		133A64AFE669BE746293906F /* YOLOWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 21B4340408E92275F136B5DB /* Build configuration list for PBXNativeTarget "YOLOWidgets" */;
+			buildPhases = (
+				FF046143F75D68B90A49F2BB /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = YOLOWidgets;
+			packageProductDependencies = (
+			);
+			productName = YOLOWidgets;
+			productReference = C9B5D31683D871C13A415642 /* YOLOWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		C008D44DD34AE6F27F25EF13 /* YOLO */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 70E9F3A9BE083A7BD7EFA79B /* Build configuration list for PBXNativeTarget "YOLO" */;
+			buildPhases = (
+				9205E171A114B0EF81C14D5C /* Sources */,
+				0A1D4134B4A8362DD926AE72 /* Resources */,
+				7E9415582DB443E09B9BBF1A /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5F2664F7470F3139BF3935D4 /* PBXTargetDependency */,
+			);
+			name = YOLO;
+			packageProductDependencies = (
+			);
+			productName = YOLO;
+			productReference = DC5BCC79096288A7D9E5EE8B /* YOLO.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A63E6A3AA4E51FFD2C722298 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					133A64AFE669BE746293906F = {
+						DevelopmentTeam = 86CCQ2AT2P;
+						ProvisioningStyle = Automatic;
+					};
+					C008D44DD34AE6F27F25EF13 = {
+						DevelopmentTeam = 86CCQ2AT2P;
+					};
+				};
+			};
+			buildConfigurationList = 1A31BE70335742EDBDCE649B /* Build configuration list for PBXProject "YOLO" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 792A5E5B66577CEBE642791B;
+			minimizedProjectReferenceProxies = 1;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C008D44DD34AE6F27F25EF13 /* YOLO */,
+				133A64AFE669BE746293906F /* YOLOWidgets */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0A1D4134B4A8362DD926AE72 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B679927135372652680BB0E /* Assets.xcassets in Resources */,
+				FAA1221A3742755618D349AA /* gentle_chime.mp3 in Resources */,
+				6EC51552A925EF69A3FD0BA3 /* ocean_waves.mp3 in Resources */,
+				8DB8FD8FA66012858BDAC5D9 /* soft_bells.mp3 in Resources */,
+				9EE5C207EC292A4171308AD9 /* yolo-logo-white.svg in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9205E171A114B0EF81C14D5C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A5D170C294A1DB6DA960B3F2 /* AlarmSettings.swift in Sources */,
+				135AA99CB278916C6B9FDFA4 /* AlarmView.swift in Sources */,
+				E627F7CCD53B9B9E179A3CF0 /* AppGradient.swift in Sources */,
+				AAABF79D24F0F0D506537B2A /* AppState.swift in Sources */,
+				39D0FCD00CD3CCBE5749F889 /* AudioMonitor.swift in Sources */,
+				275F15D4586798DBC2ADA453 /* ContentView.swift in Sources */,
+				257838B5FDF03B711AFAD992 /* CustomSoundManager.swift in Sources */,
+				7A1616B95CED40BE62F16E95 /* MonitoringView.swift in Sources */,
+				24F300F7AEDE049699D34395 /* OnboardingView.swift in Sources */,
+				AA1946B2C0CA4A1BA79B2D4B /* SettingsView.swift in Sources */,
+				655B7FEEF65BF622EF1D7EB8 /* SetupView.swift in Sources */,
+				7CABB507F8C01E81302B364C /* YOLOActivityAttributes.swift in Sources */,
+				04B868F91FD10EC055DA10E4 /* YOLOApp.swift in Sources */,
+				2B45F02EB8C502FD0BA531CF /* YOLOLiveActivity.swift in Sources */,
+				FAD204D9FBC24C0041DE7692 /* YOLOLogo.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FF046143F75D68B90A49F2BB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9BAC37CD1435986F0035DFC0 /* YOLOActivityAttributes.swift in Sources */,
+				F390D9B656ADCD12BCEDEF1F /* YOLOLiveActivityWidget.swift in Sources */,
+				CC807D9170F7F5B0CD1E5D18 /* YOLOWidgetsBundle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5F2664F7470F3139BF3935D4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 133A64AFE669BE746293906F /* YOLOWidgets */;
+			targetProxy = 1CE8BC4D4A833AB27D239910 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		24ADD46E9835F2C1C2B8DB64 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 86CCQ2AT2P;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A8C0154ED2CA6CC3C9D855DE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = YOLOWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yolo.app.widgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		CAD692BE8B113AAC3AF161E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 86CCQ2AT2P;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		DC45E94656E1F1BA88487E36 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = YOLO/YOLO.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = YOLO/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yolo.app;
+				SDKROOT = iphoneos;
+				SUPPORTS_LIVE_ACTIVITIES = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E689D4116AF947F308752B88 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = YOLO/YOLO.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = YOLO/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yolo.app;
+				SDKROOT = iphoneos;
+				SUPPORTS_LIVE_ACTIVITIES = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F13C5B1FBA2C65DE8C7365C4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = YOLOWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yolo.app.widgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1A31BE70335742EDBDCE649B /* Build configuration list for PBXProject "YOLO" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CAD692BE8B113AAC3AF161E4 /* Debug */,
+				24ADD46E9835F2C1C2B8DB64 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		21B4340408E92275F136B5DB /* Build configuration list for PBXNativeTarget "YOLOWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F13C5B1FBA2C65DE8C7365C4 /* Debug */,
+				A8C0154ED2CA6CC3C9D855DE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		70E9F3A9BE083A7BD7EFA79B /* Build configuration list for PBXNativeTarget "YOLO" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC45E94656E1F1BA88487E36 /* Debug */,
+				E689D4116AF947F308752B88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A63E6A3AA4E51FFD2C722298 /* Project object */;
+}
