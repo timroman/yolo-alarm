@@ -22,4 +22,4 @@ yolo uses no analytics, tracking, or advertising.
 
 ## Contact
 
-Questions? Contact: [your email]
+Questions? Contact: support@yoloalarm.app
