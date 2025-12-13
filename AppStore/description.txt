@@ -1,0 +1,26 @@
+A great day starts the moment you open your eyes.
+
+yolo wakes you gently when your body is ready. Because how you wake up shapes how you show up for life.
+
+Set a wake window and drift off. yolo listens for the subtle sounds of you naturally stirring - the rustling, the shifting, the signs that you're emerging from deep sleep. That's when it gently brings you into your day with a slowly building alarm.
+
+No more groggy mornings. Just you, waking up at the right moment, ready to make the most of today.
+
+FEATURES:
+• Wake window - set your earliest and latest wake times
+• Adjustable sensitivity - detect subtle movements or only louder sounds
+• Gentle volume ramp - alarm gradually builds over 60 seconds
+• Multiple alarm sounds - gentle chimes, soft bells, ocean waves
+• Import custom sounds - use your own music to start your day
+• Haptic patterns - heartbeat, pulse, escalating, or steady vibrations
+• Color themes - Ocean, Sunset, Forest, Lavender, Midnight, Coral
+• Live Activity - see your alarm status on your lock screen
+• Private by design - all processing on-device, nothing recorded or sent anywhere
+
+HOW IT WORKS:
+1. Set your wake window (e.g., 6:30 - 7:00 AM)
+2. Tap Start and sleep
+3. When yolo detects you stirring, it gently wakes you
+4. Start your day feeling ready
+
+You only live once. Wake up like it matters.
