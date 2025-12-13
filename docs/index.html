@@ -3,56 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>yolo alarm - Support</title>
+    <title>yolo alarm - Wake up ready to live</title>
+    <meta name="description" content="yolo alarm wakes you gently when your body is ready. No more groggy mornings.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
             color: #fff;
             min-height: 100vh;
+            overflow-x: hidden;
         }
-        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
-        .tagline { color: #888; margin-bottom: 2rem; }
-        h2 { font-size: 1.25rem; margin-top: 2rem; color: #7dd3fc; }
-        p, li { line-height: 1.6; color: #ccc; }
-        a { color: #7dd3fc; }
-        ul { padding-left: 1.5rem; }
-        .contact { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #333; }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 60px 24px;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 60px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: clamp(1.125rem, 3vw, 1.5rem);
+            color: rgba(255,255,255,0.6);
+            max-width: 500px;
+            line-height: 1.5;
+            margin-bottom: 48px;
+        }
+
+        .app-store-badge {
+            transition: transform 0.2s ease;
+        }
+
+        .app-store-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .app-store-badge img {
+            height: 54px;
+        }
+
+        .phone-mockup {
+            margin-top: 60px;
+            position: relative;
+        }
+
+        .phone-mockup img {
+            max-width: 280px;
+            width: 100%;
+            border-radius: 36px;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+        }
+
+        /* Features */
+        .features {
+            padding: 120px 24px;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 32px;
+            transition: background 0.2s ease;
+        }
+
+        .feature:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+
+        .feature h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature p {
+            color: rgba(255,255,255,0.5);
+            line-height: 1.6;
+        }
+
+        /* How it works */
+        .how-it-works {
+            padding: 120px 24px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .how-it-works h2 {
+            text-align: center;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 60px;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            color: rgba(255,255,255,0.5);
+            line-height: 1.5;
+        }
+
+        /* Privacy */
+        .privacy {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .privacy-icon {
+            font-size: 3rem;
+            margin-bottom: 24px;
+        }
+
+        .privacy h2 {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .privacy p {
+            color: rgba(255,255,255,0.5);
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* CTA */
+        .cta {
+            padding: 120px 24px;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .cta h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+        }
+
+        .cta p {
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 32px;
+            font-size: 1.125rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 24px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        footer p {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            margin: 0 12px;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: #fff;
+        }
+
+        .footer-links {
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
-    <h1>yolo alarm</h1>
-    <p class="tagline">Wake up ready to live</p>
+    <section class="hero">
+        <div class="logo">yolo alarm</div>
+        <h1>Wake up ready to live</h1>
+        <p class="tagline">yolo wakes you gently when your body is ready. No more groggy mornings. Just you, starting your day right.</p>
+        <a href="https://apps.apple.com/app/yolo-alarm" class="app-store-badge">
+            <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store">
+        </a>
+    </section>
 
-    <h2>About</h2>
-    <p>yolo alarm wakes you gently when your body is ready. Set a wake window, and the app listens for the subtle sounds of you naturally stirring to wake you at the perfect moment.</p>
+    <section class="features">
+        <div class="container">
+            <h2>Wake up differently</h2>
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-icon">🌅</div>
+                    <h3>Wake Window</h3>
+                    <p>Set your earliest and latest wake times. yolo finds the perfect moment in between.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Smart Detection</h3>
+                    <p>Adjustable sensitivity detects the subtle sounds of you naturally stirring awake.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔔</div>
+                    <h3>Gentle Alarm</h3>
+                    <p>Volume builds gradually over 60 seconds. Wake up peacefully, not startled.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Make It Yours</h3>
+                    <p>Custom sounds, haptic patterns, and color themes. Your alarm, your way.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <h2>How It Works</h2>
-    <ul>
-        <li>Set your earliest and latest wake times</li>
-        <li>Tap Start and drift off to sleep</li>
-        <li>When yolo detects you stirring, it gently wakes you</li>
-        <li>Start your day feeling ready, not groggy</li>
-    </ul>
+    <section class="how-it-works">
+        <div class="container">
+            <h2>How it works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Set your wake window</h3>
+                        <p>Choose your earliest and latest wake times, like 6:30 - 7:00 AM.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Tap Start and sleep</h3>
+                        <p>yolo quietly listens for signs you're waking up naturally.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Wake up refreshed</h3>
+                        <p>When you stir, yolo gently brings you into your day.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <h2>Privacy</h2>
-    <p>Your privacy matters. yolo alarm processes all audio on-device in real-time. Nothing is ever recorded, stored, or sent anywhere. <a href="privacy.html">Read our full privacy policy</a>.</p>
+    <section class="privacy">
+        <div class="container">
+            <div class="privacy-icon">🔒</div>
+            <h2>Private by design</h2>
+            <p>All audio processing happens on your device. Nothing is ever recorded, stored, or sent anywhere. Your sleep is your business.</p>
+        </div>
+    </section>
 
-    <h2>Support</h2>
-    <p>Having issues or questions? We're here to help.</p>
-    <ul>
-        <li>Make sure microphone permissions are enabled</li>
-        <li>Try adjusting the sensitivity slider in settings</li>
-        <li>Ensure your device isn't in silent mode for alarm sounds</li>
-    </ul>
+    <section class="cta">
+        <div class="container">
+            <h2>You only live once</h2>
+            <p>Wake up like it matters.</p>
+            <a href="https://apps.apple.com/app/yolo-alarm" class="app-store-badge">
+                <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store">
+            </a>
+        </div>
+    </section>
 
-    <div class="contact">
-        <h2>Contact</h2>
-        <p>For support inquiries, please email: <a href="mailto:support@yoloalarm.app">support@yoloalarm.app</a></p>
-    </div>
+    <footer>
+        <div class="footer-links">
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="mailto:support@yoloalarm.app">Support</a>
+        </div>
+        <p>&copy; 2025 yolo alarm</p>
+    </footer>
 </body>
 </html>
