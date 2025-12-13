@@ -403,7 +403,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = YOLOWidgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.wakeyolo.app.widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoloalarm.app.widgets;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -488,7 +488,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.wakeyolo.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoloalarm.app;
 				SDKROOT = iphoneos;
 				SUPPORTS_LIVE_ACTIVITIES = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -507,7 +507,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.wakeyolo.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoloalarm.app;
 				SDKROOT = iphoneos;
 				SUPPORTS_LIVE_ACTIVITIES = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -520,7 +520,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = YOLOWidgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.wakeyolo.app.widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yoloalarm.app.widgets;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
