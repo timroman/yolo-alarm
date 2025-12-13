@@ -15,10 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C008D44DD34AE6F27F25EF13"
-               BuildableName = "YOLO.app"
-               BlueprintName = "YOLO"
-               ReferencedContainer = "container:YOLO.xcodeproj">
+               BlueprintIdentifier = "8AB0579C621C459AE68954D5"
+               BuildableName = "yolo-alarm.app"
+               BlueprintName = "yolo-alarm"
+               ReferencedContainer = "container:yolo-alarm.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -29,10 +29,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "133A64AFE669BE746293906F"
-               BuildableName = "YOLOWidgets.appex"
-               BlueprintName = "YOLOWidgets"
-               ReferencedContainer = "container:YOLO.xcodeproj">
+               BlueprintIdentifier = "5369BBCFF57FB2838B4E9E68"
+               BuildableName = "yolo-alarm-widgets.appex"
+               BlueprintName = "yolo-alarm-widgets"
+               ReferencedContainer = "container:yolo-alarm.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,10 +46,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C008D44DD34AE6F27F25EF13"
-            BuildableName = "YOLO.app"
-            BlueprintName = "YOLO"
-            ReferencedContainer = "container:YOLO.xcodeproj">
+            BlueprintIdentifier = "8AB0579C621C459AE68954D5"
+            BuildableName = "yolo-alarm.app"
+            BlueprintName = "yolo-alarm"
+            ReferencedContainer = "container:yolo-alarm.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -69,10 +69,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C008D44DD34AE6F27F25EF13"
-            BuildableName = "YOLO.app"
-            BlueprintName = "YOLO"
-            ReferencedContainer = "container:YOLO.xcodeproj">
+            BlueprintIdentifier = "8AB0579C621C459AE68954D5"
+            BuildableName = "yolo-alarm.app"
+            BlueprintName = "yolo-alarm"
+            ReferencedContainer = "container:yolo-alarm.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -88,10 +88,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C008D44DD34AE6F27F25EF13"
-            BuildableName = "YOLO.app"
-            BlueprintName = "YOLO"
-            ReferencedContainer = "container:YOLO.xcodeproj">
+            BlueprintIdentifier = "8AB0579C621C459AE68954D5"
+            BuildableName = "yolo-alarm.app"
+            BlueprintName = "yolo-alarm"
+            ReferencedContainer = "container:yolo-alarm.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>

@@ -21,7 +21,7 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>YOLO needs microphone access to detect when you start moving around during your wake window.</string>
+	<string>yolo alarm needs microphone access to detect when you start moving around during your wake window.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIBackgroundModes</key>

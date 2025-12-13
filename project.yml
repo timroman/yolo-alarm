@@ -1,4 +1,4 @@
-name: YOLO
+name: yolo-alarm
 options:
   bundleIdPrefix: com.yoloalarm
   deploymentTarget:
@@ -7,17 +7,17 @@ options:
   generateEmptyDirectories: true
 
 schemes:
-  YOLO:
+  yolo-alarm:
     build:
       targets:
-        YOLO: all
-        YOLOWidgets: all
+        yolo-alarm: all
+        yolo-alarm-widgets: all
     run:
-      executable: YOLO
+      executable: yolo-alarm
     profile:
-      executable: YOLO
+      executable: yolo-alarm
     archive:
-      executable: YOLO
+      executable: yolo-alarm
 
 settings:
   base:
@@ -26,24 +26,24 @@ settings:
     CURRENT_PROJECT_VERSION: "1"
 
 targets:
-  YOLO:
+  yolo-alarm:
     type: application
     platform: iOS
     sources:
-      - path: YOLO
+      - path: yolo-alarm
         excludes:
           - "**/*.md"
     resources:
-      - path: YOLO/Resources
+      - path: yolo-alarm/Resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.yoloalarm.app
-        INFOPLIST_FILE: YOLO/Info.plist
+        INFOPLIST_FILE: yolo-alarm/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SUPPORTS_LIVE_ACTIVITIES: YES
         ENABLE_PREVIEWS: YES
     info:
-      path: YOLO/Info.plist
+      path: yolo-alarm/Info.plist
       properties:
         CFBundleDisplayName: yolo alarm
         CFBundleName: yolo-alarm
@@ -62,33 +62,33 @@ targets:
         UIBackgroundModes:
           - audio
           - processing
-        NSMicrophoneUsageDescription: "YOLO needs microphone access to detect when you start moving around during your wake window."
+        NSMicrophoneUsageDescription: "yolo alarm needs microphone access to detect when you start moving around during your wake window."
         NSSupportsLiveActivities: true
     entitlements:
-      path: YOLO/YOLO.entitlements
+      path: yolo-alarm/yolo-alarm.entitlements
       properties:
         com.apple.security.app-sandbox: true
     dependencies:
-      - target: YOLOWidgets
+      - target: yolo-alarm-widgets
 
-  YOLOWidgets:
+  yolo-alarm-widgets:
     type: app-extension
     platform: iOS
     sources:
-      - path: YOLOWidgets
-      - path: YOLO/Models/YOLOActivityAttributes.swift
+      - path: yolo-alarm-widgets
+      - path: yolo-alarm/Models/YOLOActivityAttributes.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.yoloalarm.app.widgets
-        INFOPLIST_FILE: YOLOWidgets/Info.plist
+        INFOPLIST_FILE: yolo-alarm-widgets/Info.plist
         SKIP_INSTALL: YES
         CODE_SIGN_STYLE: Automatic
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
     info:
-      path: YOLOWidgets/Info.plist
+      path: yolo-alarm-widgets/Info.plist
       properties:
-        CFBundleDisplayName: YOLOWidgets
-        CFBundleName: YOLOWidgets
+        CFBundleDisplayName: yolo-alarm-widgets
+        CFBundleName: yolo-alarm-widgets
         CFBundleShortVersionString: "1.0.0"
         CFBundleVersion: "1"
         NSExtension:
