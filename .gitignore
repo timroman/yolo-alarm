@@ -19,6 +19,9 @@ CLAUDE.md
 AGENTS.md
 .mcp.json
 
+# App Store
+AppStore/
+
 # Misc
 *.log
 *.tmp
