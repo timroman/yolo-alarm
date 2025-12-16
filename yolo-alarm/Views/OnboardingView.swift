@@ -1,12 +1,9 @@
 import SwiftUI
 import AVFoundation
-import UserNotifications
 
 struct OnboardingView: View {
     @EnvironmentObject var appState: AppState
-    @State private var currentStep = 0
     @State private var microphoneGranted = false
-    @State private var notificationsGranted = false
 
     var body: some View {
         ZStack {
@@ -30,26 +27,16 @@ struct OnboardingView: View {
 
                 Spacer()
 
-                // Permission cards
+                // Permission card
             VStack(spacing: 16) {
                 PermissionCard(
                     icon: "mic.fill",
                     title: "Microphone",
                     description: "Required to detect noise and wake you up",
                     isGranted: microphoneGranted,
-                    isActive: currentStep == 0
+                    isActive: !microphoneGranted
                 ) {
                     requestMicrophonePermission()
-                }
-
-                PermissionCard(
-                    icon: "bell.fill",
-                    title: "Notifications",
-                    description: "Get notified when your alarm triggers",
-                    isGranted: notificationsGranted,
-                    isActive: currentStep == 1
-                ) {
-                    requestNotificationPermission()
                 }
             }
             .padding(.horizontal, 24)
@@ -57,7 +44,7 @@ struct OnboardingView: View {
             Spacer()
 
             // Continue button
-            if microphoneGranted && notificationsGranted {
+            if microphoneGranted {
                 Button(action: {
                     appState.completeOnboarding()
                 }) {
@@ -90,21 +77,8 @@ struct OnboardingView: View {
         switch AVAudioApplication.shared.recordPermission {
         case .granted:
             microphoneGranted = true
-            currentStep = 1
         default:
             break
-        }
-
-        // Check notifications
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            DispatchQueue.main.async {
-                if settings.authorizationStatus == .authorized {
-                    notificationsGranted = true
-                    if microphoneGranted {
-                        currentStep = 2
-                    }
-                }
-            }
         }
     }
 
@@ -112,20 +86,6 @@ struct OnboardingView: View {
         AVAudioApplication.requestRecordPermission { granted in
             DispatchQueue.main.async {
                 microphoneGranted = granted
-                if granted {
-                    currentStep = 1
-                }
-            }
-        }
-    }
-
-    private func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-            DispatchQueue.main.async {
-                notificationsGranted = granted
-                if granted {
-                    currentStep = 2
-                }
             }
         }
     }
