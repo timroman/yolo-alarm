@@ -155,6 +155,10 @@ struct MonitoringView: View {
 
         audioMonitor.sensitivityOffset = appState.settings.sensitivityOffset
 
+        // Start audio engine NOW while device is unlocked
+        // This ensures the audio session is established before the device locks
+        audioMonitor.start()
+
         // Start Live Activity
         YOLOLiveActivity.start(wakeWindow: appState.wakeWindowFormatted)
 
@@ -187,9 +191,8 @@ struct MonitoringView: View {
 
         let inWakeWindow = now >= windowStart && now <= windowEnd
 
-        // Start audio engine and calibration when wake window begins
+        // Start calibration when wake window begins (audio engine already running)
         if inWakeWindow && audioMonitor.monitoringState == .idle {
-            audioMonitor.start()
             audioMonitor.startCalibration()
         }
 
