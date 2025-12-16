@@ -70,7 +70,7 @@ class AudioMonitor: ObservableObject {
         // Configure audio session for recording with background support
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers, .allowBluetooth])
+            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
             try session.setActive(true)
             print("🔊 Audio session activated for monitoring")
 
