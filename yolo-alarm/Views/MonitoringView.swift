@@ -42,7 +42,8 @@ struct MonitoringView: View {
                                 .font(.system(size: 10, design: .monospaced))
                                 .foregroundColor(.white.opacity(0.4))
                         }
-                    } else {
+                    } else if let baseline = audioMonitor.monitoringState.baseline {
+                        // Only show levels when listening
                         HStack(spacing: 16) {
                             VStack(spacing: 2) {
                                 Text("\(String(format: "%.0f", audioMonitor.currentLevel))")
@@ -52,18 +53,16 @@ struct MonitoringView: View {
                             }
                             .foregroundColor(.white.opacity(0.4))
 
-                            if let baseline = audioMonitor.monitoringState.baseline {
-                                Text("/")
-                                    .foregroundColor(.white.opacity(0.2))
+                            Text("/")
+                                .foregroundColor(.white.opacity(0.2))
 
-                                VStack(spacing: 2) {
-                                    Text("\(String(format: "%.0f", baseline + audioMonitor.sensitivityOffset))")
-                                        .font(.system(size: 14, weight: .medium, design: .monospaced))
-                                    Text("trigger")
-                                        .font(.system(size: 9))
-                                }
-                                .foregroundColor(.white.opacity(0.4))
+                            VStack(spacing: 2) {
+                                Text("\(String(format: "%.0f", baseline + audioMonitor.sensitivityOffset))")
+                                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                                Text("trigger")
+                                    .font(.system(size: 9))
                             }
+                            .foregroundColor(.white.opacity(0.4))
                         }
                     }
                 }
@@ -71,10 +70,15 @@ struct MonitoringView: View {
 
                 Spacer()
 
-                // Audio waveform visualization
-                AudioWaveformView(level: appState.currentDecibelLevel)
-                    .frame(height: 60)
-                    .padding(.horizontal, 20)
+                // Audio waveform visualization - only show when not idle
+                if audioMonitor.monitoringState != .idle {
+                    AudioWaveformView(level: appState.currentDecibelLevel)
+                        .frame(height: 60)
+                        .padding(.horizontal, 20)
+                } else {
+                    Spacer()
+                        .frame(height: 60)
+                }
 
                 Spacer()
                     .frame(height: 40)
@@ -153,7 +157,6 @@ struct MonitoringView: View {
         hasStarted = true
 
         audioMonitor.sensitivityOffset = appState.settings.sensitivityOffset
-        audioMonitor.start()
 
         // Start Live Activity
         YOLOLiveActivity.start(wakeWindow: appState.wakeWindowFormatted)
@@ -187,8 +190,9 @@ struct MonitoringView: View {
 
         let inWakeWindow = now >= windowStart && now <= windowEnd
 
-        // Start calibration when wake window begins
+        // Start audio engine and calibration when wake window begins
         if inWakeWindow && audioMonitor.monitoringState == .idle {
+            audioMonitor.start()
             audioMonitor.startCalibration()
         }
 
