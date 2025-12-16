@@ -15,7 +15,7 @@ enum YOLOLiveActivity {
             wakeWindow: wakeWindow,
             isActive: true,
             isAlarming: false,
-            message: "Listening..."
+            message: "Waiting..."
         )
 
         do {

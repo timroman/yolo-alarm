@@ -15,12 +15,12 @@ struct YOLOLiveActivityWidget: Widget {
                         .foregroundColor(context.state.isAlarming ? .yellow : .white)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(context.state.isAlarming ? "WAKE UP" : context.state.wakeWindow)
+                    Text(context.state.isAlarming ? "😊" : context.state.wakeWindow)
                         .font(.caption.bold())
                         .foregroundColor(context.state.isAlarming ? .yellow : .white)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    Text(context.state.isAlarming ? context.state.message : "Listening...")
+                    Text(context.state.message)
                         .font(.caption2)
                         .foregroundColor(context.state.isAlarming ? .white : .gray)
                 }
@@ -44,7 +44,7 @@ struct LockScreenView: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(context.state.isAlarming ? "WAKE UP!" : "Alarm \(context.state.wakeWindow)")
+                Text(context.state.isAlarming ? "It's time to wake up 😊" : "Alarm \(context.state.wakeWindow)")
                     .font(.headline.bold())
                     .foregroundColor(context.state.isAlarming ? .yellow : .white)
                 Text(context.state.message)
