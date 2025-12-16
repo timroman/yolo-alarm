@@ -70,6 +70,10 @@ class AudioMonitor: ObservableObject {
         // Configure audio session for recording with background support
         do {
             let session = AVAudioSession.sharedInstance()
+
+            // Try to deactivate first in case it's in a bad state
+            try? session.setActive(false, options: .notifyOthersOnDeactivation)
+
             try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
             try session.setActive(true)
             print("🔊 Audio session activated for monitoring")
@@ -83,12 +87,34 @@ class AudioMonitor: ObservableObject {
             )
         } catch {
             print("❌ Failed to configure audio session: \(error)")
+            // Try one more time after a brief moment
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+                self.retryAudioSession()
+            }
             return
         }
 
-        // Start silent audio to keep background audio session alive
-        startSilentAudio()
+        // Start the audio engine
+        startAudioEngine()
+    }
 
+    private func retryAudioSession() {
+        print("🎤 Retrying audio session...")
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
+            try session.setActive(true)
+            print("🔊 Audio session activated on retry")
+
+            // Now start the engine
+            startAudioEngine()
+        } catch {
+            print("❌ Audio session retry also failed: \(error)")
+        }
+    }
+
+    private func startAudioEngine() {
         print("🎤 Creating audio engine...")
         audioEngine = AVAudioEngine()
         guard let audioEngine = audioEngine else {
@@ -110,6 +136,7 @@ class AudioMonitor: ObservableObject {
             try audioEngine.start()
             isRunning = true
             consecutiveTriggerCount = 0
+            startSilentAudio()
             print("🎤 Audio engine started successfully!")
         } catch {
             print("❌ Failed to start audio engine: \(error)")
