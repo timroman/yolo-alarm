@@ -103,14 +103,20 @@ class AudioMonitor: ObservableObject {
             print("🔊 Audio session category set")
         } catch {
             print("❌ Failed to set audio category: \(error)")
+            return
         }
 
         do {
             try session.setActive(true)
             print("🔊 Audio session activated for monitoring")
         } catch {
-            print("⚠️ Audio session activation warning: \(error.localizedDescription)")
-            // Continue anyway - the engine might still work
+            print("❌ Audio session activation failed: \(error.localizedDescription)")
+            // Retry after a delay
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                self.retryActivation()
+            }
+            return
         }
 
         // Listen for interruptions
@@ -125,6 +131,32 @@ class AudioMonitor: ObservableObject {
         startAudioEngine()
     }
 
+    private func retryActivation() {
+        print("🎤 Retrying audio session activation...")
+        let session = AVAudioSession.sharedInstance()
+
+        do {
+            try session.setActive(true)
+            print("🔊 Audio session activated on retry")
+
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleInterruption),
+                name: AVAudioSession.interruptionNotification,
+                object: session
+            )
+
+            startAudioEngine()
+        } catch {
+            print("❌ Audio session retry failed: \(error.localizedDescription)")
+            // Try again
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                self.retryActivation()
+            }
+        }
+    }
+
     private func startAudioEngine() {
         print("🎤 Creating audio engine...")
         audioEngine = AVAudioEngine()
@@ -136,6 +168,18 @@ class AudioMonitor: ObservableObject {
         let inputNode = audioEngine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
         print("🎤 Input format: \(format)")
+
+        // Validate format before installing tap
+        guard format.sampleRate > 0 && format.channelCount > 0 else {
+            print("❌ Invalid audio format (sampleRate: \(format.sampleRate), channels: \(format.channelCount))")
+            print("🎤 Will retry in 1 second...")
+            self.audioEngine = nil
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                self.retryActivation()
+            }
+            return
+        }
 
         // Install tap to monitor audio levels
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
