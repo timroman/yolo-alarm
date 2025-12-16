@@ -45,6 +45,7 @@ class AudioMonitor: ObservableObject {
     var sensitivityOffset: Float = 9.0  // Default medium (dB above baseline)
 
     private var audioEngine: AVAudioEngine?
+    private var silentPlayer: AVAudioPlayer?
     private var isRunning = false
 
     // Thread-safe calibration state (accessed from audio thread)
@@ -54,6 +55,7 @@ class AudioMonitor: ObservableObject {
     private var _isCalibrating = false
     private var _baseline: Float?
     private let calibrationDuration: TimeInterval = 30.0
+    private var _didTransitionToListening = false
 
     // Require sustained noise before triggering
     private var consecutiveTriggerCount = 0
@@ -65,16 +67,27 @@ class AudioMonitor: ObservableObject {
             return
         }
 
-        // Configure audio session for recording
+        // Configure audio session for recording with background support
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
+            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers, .allowBluetooth])
             try session.setActive(true)
             print("🔊 Audio session activated for monitoring")
+
+            // Listen for interruptions
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleInterruption),
+                name: AVAudioSession.interruptionNotification,
+                object: session
+            )
         } catch {
             print("❌ Failed to configure audio session: \(error)")
             return
         }
+
+        // Start silent audio to keep background audio session alive
+        startSilentAudio()
 
         print("🎤 Creating audio engine...")
         audioEngine = AVAudioEngine()
@@ -103,12 +116,67 @@ class AudioMonitor: ObservableObject {
         }
     }
 
+    private func startSilentAudio() {
+        // Use one of the existing alarm sounds at zero volume to keep audio session alive
+        // This ensures the "audio" background mode keeps the app running
+        let soundNames = ["gentle_chime", "soft_bells", "ocean_waves"]
+        var soundURL: URL?
+
+        for name in soundNames {
+            if let url = Bundle.main.url(forResource: name, withExtension: "mp3") {
+                soundURL = url
+                break
+            }
+        }
+
+        guard let url = soundURL else {
+            print("⚠️ No audio file found for background support")
+            return
+        }
+
+        do {
+            silentPlayer = try AVAudioPlayer(contentsOf: url)
+            silentPlayer?.numberOfLoops = -1  // Loop forever
+            silentPlayer?.volume = 0.0  // Silent
+            silentPlayer?.play()
+            print("🔇 Silent audio started for background support")
+        } catch {
+            print("⚠️ Failed to start silent audio: \(error)")
+        }
+    }
+
+    @objc private func handleInterruption(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+            return
+        }
+
+        switch type {
+        case .began:
+            print("🎤 Audio interrupted")
+        case .ended:
+            print("🎤 Audio interruption ended, restarting...")
+            do {
+                try AVAudioSession.sharedInstance().setActive(true)
+                try audioEngine?.start()
+                silentPlayer?.play()
+                print("🎤 Audio engine restarted after interruption")
+            } catch {
+                print("❌ Failed to restart after interruption: \(error)")
+            }
+        @unknown default:
+            break
+        }
+    }
+
     func startCalibration() {
         calibrationLock.lock()
         _calibrationSamples.removeAll()
         _calibrationStartTime = Date()
         _isCalibrating = true
         _baseline = nil
+        _didTransitionToListening = false
         calibrationLock.unlock()
 
         calibrationProgress = 0.0
@@ -118,6 +186,13 @@ class AudioMonitor: ObservableObject {
 
     func stop() {
         guard isRunning else { return }
+
+        // Stop silent player first
+        silentPlayer?.stop()
+        silentPlayer = nil
+
+        // Remove notification observer
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
 
         audioEngine?.inputNode.removeTap(onBus: 0)
         audioEngine?.stop()
@@ -132,14 +207,16 @@ class AudioMonitor: ObservableObject {
         _calibrationStartTime = nil
         _isCalibrating = false
         _baseline = nil
+        _didTransitionToListening = false
         calibrationLock.unlock()
 
-        // Deactivate audio session to stop microphone indicator
+        // Deactivate audio session - don't fail if it errors
         do {
             try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
             print("🔊 Audio session deactivated")
         } catch {
-            print("⚠️ Failed to deactivate audio session: \(error)")
+            // This can fail if other audio is playing, that's okay
+            print("⚠️ Audio session deactivation note: \(error.localizedDescription)")
         }
     }
 
@@ -204,6 +281,7 @@ class AudioMonitor: ObservableObject {
         let isCalibrating = _isCalibrating
         let baseline = _baseline
         let startTime = _calibrationStartTime
+        let alreadyTransitioned = _didTransitionToListening
         calibrationLock.unlock()
 
         if isCalibrating {
@@ -225,12 +303,24 @@ class AudioMonitor: ObservableObject {
                 calibrationLock.lock()
                 _isCalibrating = false
                 _baseline = calculatedBaseline
+                _didTransitionToListening = true
                 calibrationLock.unlock()
 
                 result.newState = .listening(baseline: calculatedBaseline)
                 print("🎤 Calibration complete. Baseline: \(calculatedBaseline) dB, Threshold: \(calculatedBaseline + sensitivityOffset) dB")
+
+                // Update Live Activity immediately from background thread
+                YOLOLiveActivity.updateStatus("Listening...")
             }
         } else if let currentBaseline = baseline {
+            // Update Live Activity on first listen after calibration (in case main actor was slow)
+            if !alreadyTransitioned {
+                calibrationLock.lock()
+                _didTransitionToListening = true
+                calibrationLock.unlock()
+                YOLOLiveActivity.updateStatus("Listening...")
+            }
+
             // Listening mode - check if noise exceeds baseline + offset
             let threshold = currentBaseline + sensitivityOffset
             if level > threshold {
