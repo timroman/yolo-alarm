@@ -47,9 +47,12 @@ class AudioMonitor: ObservableObject {
     private var audioEngine: AVAudioEngine?
     private var isRunning = false
 
-    // Calibration samples
-    private var calibrationSamples: [Float] = []
-    private var calibrationStartTime: Date?
+    // Thread-safe calibration state (accessed from audio thread)
+    private let calibrationLock = NSLock()
+    private var _calibrationSamples: [Float] = []
+    private var _calibrationStartTime: Date?
+    private var _isCalibrating = false
+    private var _baseline: Float?
     private let calibrationDuration: TimeInterval = 30.0
 
     // Require sustained noise before triggering
@@ -101,8 +104,13 @@ class AudioMonitor: ObservableObject {
     }
 
     func startCalibration() {
-        calibrationSamples.removeAll()
-        calibrationStartTime = Date()
+        calibrationLock.lock()
+        _calibrationSamples.removeAll()
+        _calibrationStartTime = Date()
+        _isCalibrating = true
+        _baseline = nil
+        calibrationLock.unlock()
+
         calibrationProgress = 0.0
         monitoringState = .calibrating(startTime: Date())
         print("🎤 Starting 30-second calibration...")
@@ -117,8 +125,14 @@ class AudioMonitor: ObservableObject {
         isRunning = false
         didTrigger = false
         monitoringState = .idle
-        calibrationSamples.removeAll()
         calibrationProgress = 0.0
+
+        calibrationLock.lock()
+        _calibrationSamples.removeAll()
+        _calibrationStartTime = nil
+        _isCalibrating = false
+        _baseline = nil
+        calibrationLock.unlock()
 
         // Deactivate audio session to stop microphone indicator
         do {
@@ -154,46 +168,85 @@ class AudioMonitor: ObservableObject {
         let rms = sqrt(sum / Float(frameLength))
         let decibels = 20 * log10(max(rms, 0.000001))
 
+        // Process calibration/trigger logic on audio thread (thread-safe)
+        let result = processLevel(decibels)
+
+        // Dispatch UI updates and Live Activity updates to main thread
         Task { @MainActor in
             self.currentLevel = decibels
-            self.checkForTrigger(level: decibels)
+            if let newProgress = result.progress {
+                self.calibrationProgress = newProgress
+            }
+            if let newState = result.newState {
+                self.monitoringState = newState
+                // Update Live Activity when state changes
+                if newState.isListening {
+                    YOLOLiveActivity.updateStatus("Listening...")
+                }
+            }
+            if result.shouldTrigger {
+                self.didTrigger = true
+            }
         }
     }
 
-    private func checkForTrigger(level: Float) {
-        switch monitoringState {
-        case .idle:
-            // Not monitoring, do nothing
-            consecutiveTriggerCount = 0
-            return
+    private struct ProcessResult {
+        var progress: Double?
+        var newState: MonitoringState?
+        var shouldTrigger: Bool = false
+    }
 
-        case .calibrating:
+    // Process on audio thread - uses thread-safe state
+    private func processLevel(_ level: Float) -> ProcessResult {
+        var result = ProcessResult()
+
+        calibrationLock.lock()
+        let isCalibrating = _isCalibrating
+        let baseline = _baseline
+        let startTime = _calibrationStartTime
+        calibrationLock.unlock()
+
+        if isCalibrating {
             // Collect samples for baseline calculation
-            calibrationSamples.append(level)
+            calibrationLock.lock()
+            _calibrationSamples.append(level)
+            let sampleCount = _calibrationSamples.count
+            let samples = _calibrationSamples
+            calibrationLock.unlock()
 
-            guard let startTime = calibrationStartTime else { return }
-            let elapsed = Date().timeIntervalSince(startTime)
-            calibrationProgress = min(elapsed / calibrationDuration, 1.0)
+            guard let calibrationStart = startTime else { return result }
+            let elapsed = Date().timeIntervalSince(calibrationStart)
+            result.progress = min(elapsed / calibrationDuration, 1.0)
 
             // Check if calibration is complete
-            if elapsed >= calibrationDuration {
-                let baseline = calibrationSamples.reduce(0, +) / Float(calibrationSamples.count)
-                monitoringState = .listening(baseline: baseline)
-                print("🎤 Calibration complete. Baseline: \(baseline) dB, Threshold: \(baseline + sensitivityOffset) dB")
-            }
+            if elapsed >= calibrationDuration && sampleCount > 0 {
+                let calculatedBaseline = samples.reduce(0, +) / Float(sampleCount)
 
-        case .listening(let baseline):
-            // Check if noise exceeds baseline + offset
-            let threshold = baseline + sensitivityOffset
+                calibrationLock.lock()
+                _isCalibrating = false
+                _baseline = calculatedBaseline
+                calibrationLock.unlock()
+
+                result.newState = .listening(baseline: calculatedBaseline)
+                print("🎤 Calibration complete. Baseline: \(calculatedBaseline) dB, Threshold: \(calculatedBaseline + sensitivityOffset) dB")
+            }
+        } else if let currentBaseline = baseline {
+            // Listening mode - check if noise exceeds baseline + offset
+            let threshold = currentBaseline + sensitivityOffset
             if level > threshold {
                 consecutiveTriggerCount += 1
                 if consecutiveTriggerCount >= requiredConsecutiveTriggers {
                     print("🎤 Triggered! Level: \(level) dB exceeded threshold: \(threshold) dB")
-                    didTrigger = true
+                    result.shouldTrigger = true
                 }
             } else {
                 consecutiveTriggerCount = 0
             }
+        } else {
+            // Idle
+            consecutiveTriggerCount = 0
         }
+
+        return result
     }
 }
