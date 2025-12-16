@@ -31,6 +31,24 @@ enum YOLOLiveActivity {
         }
     }
 
+    static func updateStatus(_ status: String) {
+        guard let activity = currentActivity else { return }
+
+        let state = YOLOActivityAttributes.ContentState(
+            wakeWindow: activity.content.state.wakeWindow,
+            isActive: true,
+            isAlarming: false,
+            message: status
+        )
+
+        Task {
+            await activity.update(
+                ActivityContent(state: state, staleDate: nil)
+            )
+            print("Live Activity status: \(status)")
+        }
+    }
+
     static func triggerAlarm(message: String) {
         let state = YOLOActivityAttributes.ContentState(
             wakeWindow: "",

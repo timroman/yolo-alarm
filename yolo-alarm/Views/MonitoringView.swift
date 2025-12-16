@@ -72,19 +72,6 @@ struct MonitoringView: View {
 
                 Spacer()
 
-                // Audio waveform visualization - only show when listening
-                if audioMonitor.monitoringState.isListening {
-                    AudioWaveformView(level: appState.currentDecibelLevel)
-                        .frame(height: 60)
-                        .padding(.horizontal, 20)
-                } else {
-                    Spacer()
-                        .frame(height: 60)
-                }
-
-                Spacer()
-                    .frame(height: 40)
-
                 // Stop button - subtle
                 Button(action: {
                     print("🛑 Stop button tapped")
@@ -107,8 +94,16 @@ struct MonitoringView: View {
         .task {
             await startMonitoringAsync()
         }
-        .onReceive(audioMonitor.$currentLevel) { level in
-            appState.currentDecibelLevel = level
+        .onReceive(audioMonitor.$monitoringState) { state in
+            // Update Live Activity with current status
+            switch state {
+            case .idle:
+                break
+            case .calibrating:
+                YOLOLiveActivity.updateStatus("Calibrating...")
+            case .listening:
+                YOLOLiveActivity.updateStatus("Listening...")
+            }
         }
         .onReceive(audioMonitor.$didTrigger) { triggered in
             if triggered {
@@ -205,32 +200,6 @@ struct MonitoringView: View {
             YOLOLiveActivity.triggerAlarm(message: appState.settings.tagline)
             appState.triggerAlarm()
         }
-    }
-}
-
-struct AudioWaveformView: View {
-    let level: Float
-    @State private var bars: [CGFloat] = Array(repeating: 0.1, count: 30)
-
-    var body: some View {
-        HStack(spacing: 3) {
-            ForEach(0..<bars.count, id: \.self) { index in
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(Color.white.opacity(0.15))
-                    .frame(width: 4, height: max(4, bars[index] * 60))
-            }
-        }
-        .onChange(of: level) { _, newLevel in
-            updateBars(level: newLevel)
-        }
-    }
-
-    private func updateBars(level: Float) {
-        // Shift bars left
-        bars.removeFirst()
-        // Normalize level (-160 to 0 dB) to 0-1 range
-        let normalized = CGFloat((level + 160) / 160)
-        bars.append(max(0.1, min(1.0, normalized)))
     }
 }
 
