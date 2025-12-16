@@ -16,11 +16,11 @@ struct AlarmSettings: Codable {
         customSoundId != nil
     }
 
-    // Convert sensitivity slider (0-1) to decibel threshold
-    // 0.0 = -20 dB (needs loud noise - talking loudly)
-    // 1.0 = -55 dB (very sensitive - quiet rustling, tossing and turning)
-    var sensitivityThreshold: Float {
-        return -20.0 - (sensitivityValue * 35.0)
+    // Convert sensitivity slider (0-1) to decibel offset above baseline
+    // 0.0 = +15 dB above baseline (needs loud noise)
+    // 1.0 = +3 dB above baseline (very sensitive - small sounds)
+    var sensitivityOffset: Float {
+        return 15.0 - (sensitivityValue * 12.0)
     }
 
     var sensitivityLabel: String {

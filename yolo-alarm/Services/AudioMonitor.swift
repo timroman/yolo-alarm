@@ -1,24 +1,56 @@
 import AVFoundation
 import Combine
 
+enum MonitoringState: Equatable {
+    case idle
+    case calibrating(startTime: Date)
+    case listening(baseline: Float)
+
+    static func == (lhs: MonitoringState, rhs: MonitoringState) -> Bool {
+        switch (lhs, rhs) {
+        case (.idle, .idle):
+            return true
+        case (.calibrating, .calibrating):
+            return true
+        case (.listening(let l), .listening(let r)):
+            return l == r
+        default:
+            return false
+        }
+    }
+
+    var isCalibrating: Bool {
+        if case .calibrating = self { return true }
+        return false
+    }
+
+    var isListening: Bool {
+        if case .listening = self { return true }
+        return false
+    }
+
+    var baseline: Float? {
+        if case .listening(let baseline) = self { return baseline }
+        return nil
+    }
+}
+
 @MainActor
 class AudioMonitor: ObservableObject {
     @Published var currentLevel: Float = -160.0
     @Published var didTrigger: Bool = false
-    @Published var isDetectionEnabled: Bool = false
+    @Published var monitoringState: MonitoringState = .idle
+    @Published var calibrationProgress: Double = 0.0
 
-    var sensitivityThreshold: Float = -27.5  // Default medium
+    var sensitivityOffset: Float = 9.0  // Default medium (dB above baseline)
 
     private var audioEngine: AVAudioEngine?
     private var isRunning = false
 
-    // Smoothing for noise detection
-    private var recentLevels: [Float] = []
-    private let smoothingWindowSize = 30  // ~0.6 seconds of audio
-
-    // Warm-up period to let audio levels stabilize
-    private var warmUpBuffersRemaining = 0
-    private let warmUpBufferCount = 100  // ~2 seconds at 48kHz/1024
+    // Calibration samples
+    private var calibrationSamples: [Float] = []
+    private var calibrationStartTime: Date?
+    private let calibrationDuration: TimeInterval = 30.0
 
     // Require sustained noise before triggering
     private var consecutiveTriggerCount = 0
@@ -61,12 +93,19 @@ class AudioMonitor: ObservableObject {
         do {
             try audioEngine.start()
             isRunning = true
-            warmUpBuffersRemaining = warmUpBufferCount
             consecutiveTriggerCount = 0
-            print("🎤 Audio engine started successfully! Warming up for ~5 seconds...")
+            print("🎤 Audio engine started successfully!")
         } catch {
             print("❌ Failed to start audio engine: \(error)")
         }
+    }
+
+    func startCalibration() {
+        calibrationSamples.removeAll()
+        calibrationStartTime = Date()
+        calibrationProgress = 0.0
+        monitoringState = .calibrating(startTime: Date())
+        print("🎤 Starting 30-second calibration...")
     }
 
     func stop() {
@@ -77,7 +116,9 @@ class AudioMonitor: ObservableObject {
         audioEngine = nil
         isRunning = false
         didTrigger = false
-        recentLevels.removeAll()
+        monitoringState = .idle
+        calibrationSamples.removeAll()
+        calibrationProgress = 0.0
 
         // Deactivate audio session to stop microphone indicator
         do {
@@ -119,41 +160,40 @@ class AudioMonitor: ObservableObject {
         }
     }
 
-    private var logCounter = 0
-
     private func checkForTrigger(level: Float) {
-        // Add to smoothing window
-        recentLevels.append(level)
-        if recentLevels.count > smoothingWindowSize {
-            recentLevels.removeFirst()
-        }
-
-        // Handle warm-up period
-        if warmUpBuffersRemaining > 0 {
-            warmUpBuffersRemaining -= 1
-            if warmUpBuffersRemaining == 0 {
-                print("🎤 Warm-up complete, detection ready")
-            }
-            return
-        }
-
-        // Use the current level directly (not averaged) for more responsive detection
-        let checkLevel = level
-
-
-        if !isDetectionEnabled {
+        switch monitoringState {
+        case .idle:
+            // Not monitoring, do nothing
             consecutiveTriggerCount = 0
             return
-        }
 
-        // Check if noise exceeds threshold
-        if checkLevel > sensitivityThreshold {
-            consecutiveTriggerCount += 1
-            if consecutiveTriggerCount >= requiredConsecutiveTriggers {
-                didTrigger = true
+        case .calibrating:
+            // Collect samples for baseline calculation
+            calibrationSamples.append(level)
+
+            guard let startTime = calibrationStartTime else { return }
+            let elapsed = Date().timeIntervalSince(startTime)
+            calibrationProgress = min(elapsed / calibrationDuration, 1.0)
+
+            // Check if calibration is complete
+            if elapsed >= calibrationDuration {
+                let baseline = calibrationSamples.reduce(0, +) / Float(calibrationSamples.count)
+                monitoringState = .listening(baseline: baseline)
+                print("🎤 Calibration complete. Baseline: \(baseline) dB, Threshold: \(baseline + sensitivityOffset) dB")
             }
-        } else {
-            consecutiveTriggerCount = 0
+
+        case .listening(let baseline):
+            // Check if noise exceeds baseline + offset
+            let threshold = baseline + sensitivityOffset
+            if level > threshold {
+                consecutiveTriggerCount += 1
+                if consecutiveTriggerCount >= requiredConsecutiveTriggers {
+                    print("🎤 Triggered! Level: \(level) dB exceeded threshold: \(threshold) dB")
+                    didTrigger = true
+                }
+            } else {
+                consecutiveTriggerCount = 0
+            }
         }
     }
 }

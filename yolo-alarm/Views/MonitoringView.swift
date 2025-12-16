@@ -27,29 +27,44 @@ struct MonitoringView: View {
 
                 // Status info
                 VStack(spacing: 8) {
-                    Text(audioMonitor.isDetectionEnabled ? "Listening" : "Waiting")
+                    Text(statusText)
                         .font(.caption.bold())
-                        .foregroundColor(audioMonitor.isDetectionEnabled ? .green.opacity(0.8) : .orange.opacity(0.8))
+                        .foregroundColor(statusColor)
 
-                    HStack(spacing: 16) {
-                        VStack(spacing: 2) {
-                            Text("\(String(format: "%.0f", audioMonitor.currentLevel))")
-                                .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            Text("dB")
-                                .font(.system(size: 9))
+                    if audioMonitor.monitoringState.isCalibrating {
+                        // Calibration progress
+                        VStack(spacing: 4) {
+                            ProgressView(value: audioMonitor.calibrationProgress)
+                                .progressViewStyle(LinearProgressViewStyle(tint: .yellow.opacity(0.8)))
+                                .frame(width: 120)
+
+                            Text("\(Int(audioMonitor.calibrationProgress * 30))s / 30s")
+                                .font(.system(size: 10, design: .monospaced))
+                                .foregroundColor(.white.opacity(0.4))
                         }
-                        .foregroundColor(.white.opacity(0.4))
+                    } else {
+                        HStack(spacing: 16) {
+                            VStack(spacing: 2) {
+                                Text("\(String(format: "%.0f", audioMonitor.currentLevel))")
+                                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                                Text("dB")
+                                    .font(.system(size: 9))
+                            }
+                            .foregroundColor(.white.opacity(0.4))
 
-                        Text("/")
-                            .foregroundColor(.white.opacity(0.2))
+                            if let baseline = audioMonitor.monitoringState.baseline {
+                                Text("/")
+                                    .foregroundColor(.white.opacity(0.2))
 
-                        VStack(spacing: 2) {
-                            Text("\(String(format: "%.0f", audioMonitor.sensitivityThreshold))")
-                                .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            Text("trigger")
-                                .font(.system(size: 9))
+                                VStack(spacing: 2) {
+                                    Text("\(String(format: "%.0f", baseline + audioMonitor.sensitivityOffset))")
+                                        .font(.system(size: 14, weight: .medium, design: .monospaced))
+                                    Text("trigger")
+                                        .font(.system(size: 9))
+                                }
+                                .foregroundColor(.white.opacity(0.4))
+                            }
                         }
-                        .foregroundColor(.white.opacity(0.4))
                     }
                 }
                 .padding(.top, 20)
@@ -111,11 +126,33 @@ struct MonitoringView: View {
         return formatter.string(from: currentTime)
     }
 
+    private var statusText: String {
+        switch audioMonitor.monitoringState {
+        case .idle:
+            return "Waiting"
+        case .calibrating:
+            return "Calibrating..."
+        case .listening:
+            return "Listening"
+        }
+    }
+
+    private var statusColor: Color {
+        switch audioMonitor.monitoringState {
+        case .idle:
+            return .orange.opacity(0.8)
+        case .calibrating:
+            return .yellow.opacity(0.8)
+        case .listening:
+            return .green.opacity(0.8)
+        }
+    }
+
     private func startMonitoringAsync() async {
         guard !hasStarted else { return }
         hasStarted = true
 
-        audioMonitor.sensitivityThreshold = appState.settings.sensitivityThreshold
+        audioMonitor.sensitivityOffset = appState.settings.sensitivityOffset
         audioMonitor.start()
 
         // Start Live Activity
@@ -148,8 +185,12 @@ struct MonitoringView: View {
         let windowStart = appState.settings.wakeWindowStart
         let windowEnd = appState.settings.wakeWindowEnd
 
-        // Enable detection only during wake window
-        audioMonitor.isDetectionEnabled = now >= windowStart && now <= windowEnd
+        let inWakeWindow = now >= windowStart && now <= windowEnd
+
+        // Start calibration when wake window begins
+        if inWakeWindow && audioMonitor.monitoringState == .idle {
+            audioMonitor.startCalibration()
+        }
 
         // Fallback alarm at end time
         if now >= windowEnd && appState.currentScreen == .monitoring {

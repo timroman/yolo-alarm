@@ -31,7 +31,7 @@ struct SettingsView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                             Spacer()
-                            Text("\(String(format: "%.0f", appState.settings.sensitivityThreshold)) dB")
+                            Text("+\(String(format: "%.0f", appState.settings.sensitivityOffset)) dB")
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         }
@@ -39,7 +39,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Noise Sensitivity")
                 } footer: {
-                    Text("Higher sensitivity detects quieter sounds. Adjust based on your environment.")
+                    Text("Triggers when sound exceeds background noise by this amount. Higher sensitivity detects smaller sounds.")
                 }
 
                 // Volume Section
