@@ -25,11 +25,13 @@ struct MonitoringView: View {
                     .foregroundColor(.white.opacity(0.2))
                     .padding(.top, 8)
 
-                // Status info
+                // Status info - only show when calibrating or listening
                 VStack(spacing: 8) {
-                    Text(statusText)
-                        .font(.caption.bold())
-                        .foregroundColor(statusColor)
+                    if audioMonitor.monitoringState != .idle {
+                        Text(statusText)
+                            .font(.caption.bold())
+                            .foregroundColor(statusColor)
+                    }
 
                     if audioMonitor.monitoringState.isCalibrating {
                         // Calibration progress
@@ -70,8 +72,8 @@ struct MonitoringView: View {
 
                 Spacer()
 
-                // Audio waveform visualization - only show when not idle
-                if audioMonitor.monitoringState != .idle {
+                // Audio waveform visualization - only show when listening
+                if audioMonitor.monitoringState.isListening {
                     AudioWaveformView(level: appState.currentDecibelLevel)
                         .frame(height: 60)
                         .padding(.horizontal, 20)
@@ -126,7 +128,7 @@ struct MonitoringView: View {
 
     private var timeString: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm"
+        formatter.dateFormat = "h:mm a"
         return formatter.string(from: currentTime)
     }
 
