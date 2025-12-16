@@ -67,51 +67,62 @@ class AudioMonitor: ObservableObject {
             return
         }
 
-        // Configure audio session for recording with background support
-        do {
-            let session = AVAudioSession.sharedInstance()
-
-            // Try to deactivate first in case it's in a bad state
-            try? session.setActive(false, options: .notifyOthersOnDeactivation)
-
-            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
-            try session.setActive(true)
-            print("🔊 Audio session activated for monitoring")
-
-            // Listen for interruptions
-            NotificationCenter.default.addObserver(
-                self,
-                selector: #selector(handleInterruption),
-                name: AVAudioSession.interruptionNotification,
-                object: session
-            )
-        } catch {
-            print("❌ Failed to configure audio session: \(error)")
-            // Try one more time after a brief moment
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-                self.retryAudioSession()
+        // Check microphone permission first
+        switch AVAudioApplication.shared.recordPermission {
+        case .granted:
+            print("🎤 Microphone permission granted")
+        case .denied:
+            print("❌ Microphone permission denied")
+            return
+        case .undetermined:
+            print("🎤 Requesting microphone permission...")
+            AVAudioApplication.requestRecordPermission { granted in
+                if granted {
+                    Task { @MainActor in
+                        self.configureAndStartAudio()
+                    }
+                } else {
+                    print("❌ Microphone permission denied by user")
+                }
             }
             return
+        @unknown default:
+            break
         }
+
+        configureAndStartAudio()
+    }
+
+    private func configureAndStartAudio() {
+        // Configure audio session for recording with background support
+        let session = AVAudioSession.sharedInstance()
+
+        do {
+            // Set category first (doesn't require active session)
+            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
+            print("🔊 Audio session category set")
+        } catch {
+            print("❌ Failed to set audio category: \(error)")
+        }
+
+        do {
+            try session.setActive(true)
+            print("🔊 Audio session activated for monitoring")
+        } catch {
+            print("⚠️ Audio session activation warning: \(error.localizedDescription)")
+            // Continue anyway - the engine might still work
+        }
+
+        // Listen for interruptions
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleInterruption),
+            name: AVAudioSession.interruptionNotification,
+            object: session
+        )
 
         // Start the audio engine
         startAudioEngine()
-    }
-
-    private func retryAudioSession() {
-        print("🎤 Retrying audio session...")
-        do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .mixWithOthers])
-            try session.setActive(true)
-            print("🔊 Audio session activated on retry")
-
-            // Now start the engine
-            startAudioEngine()
-        } catch {
-            print("❌ Audio session retry also failed: \(error)")
-        }
     }
 
     private func startAudioEngine() {
