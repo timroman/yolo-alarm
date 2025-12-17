@@ -31,8 +31,8 @@ struct OnboardingView: View {
             VStack(spacing: 16) {
                 PermissionCard(
                     icon: "mic.fill",
-                    title: "Microphone",
-                    description: "Required to detect noise and wake you up",
+                    title: "microphone",
+                    description: "required to detect noise and wake you up",
                     isGranted: microphoneGranted,
                     isActive: !microphoneGranted
                 ) {
@@ -48,7 +48,7 @@ struct OnboardingView: View {
                 Button(action: {
                     appState.completeOnboarding()
                 }) {
-                    Text("Get Started")
+                    Text("get started")
                         .font(.title2.bold())
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
@@ -58,7 +58,7 @@ struct OnboardingView: View {
                 }
                 .padding(.horizontal, 40)
             } else {
-                Text("Grant permissions to continue")
+                Text("grant permissions to continue")
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
@@ -127,7 +127,7 @@ struct PermissionCard: View {
                 Spacer()
 
                 if !isGranted && isActive {
-                    Text("Allow")
+                    Text("allow")
                         .font(.subheadline.bold())
                         .foregroundColor(.black)
                         .padding(.horizontal, 16)

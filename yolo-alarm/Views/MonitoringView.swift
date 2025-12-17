@@ -3,6 +3,7 @@ import SwiftUI
 struct MonitoringView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var audioMonitor = AudioMonitor()
+    @StateObject private var motionMonitor = MotionMonitor()
     @State private var currentTime = Date()
     @State private var hasStarted = false
     @State private var wakeWindowTimer: Timer?
@@ -20,7 +21,7 @@ struct MonitoringView: View {
                     .foregroundColor(.white.opacity(0.3))
 
                 // Wake window
-                Text("Alarm \(appState.wakeWindowFormatted)")
+                Text("alarm \(appState.wakeWindowFormatted)")
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.2))
                     .padding(.top, 8)
@@ -44,7 +45,7 @@ struct MonitoringView: View {
                                 .font(.system(size: 10, design: .monospaced))
                                 .foregroundColor(.white.opacity(0.4))
                         }
-                    } else if let baseline = audioMonitor.monitoringState.baseline {
+                    } else if let threshold = audioMonitor.monitoringState.threshold {
                         // Only show levels when listening
                         HStack(spacing: 16) {
                             VStack(spacing: 2) {
@@ -59,7 +60,7 @@ struct MonitoringView: View {
                                 .foregroundColor(.white.opacity(0.2))
 
                             VStack(spacing: 2) {
-                                Text("\(String(format: "%.0f", baseline + audioMonitor.sensitivityOffset))")
+                                Text("\(String(format: "%.0f", threshold))")
                                     .font(.system(size: 14, weight: .medium, design: .monospaced))
                                 Text("trigger")
                                     .font(.system(size: 9))
@@ -75,15 +76,17 @@ struct MonitoringView: View {
                 // Stop button - subtle
                 Button(action: {
                     print("🛑 Stop button tapped")
-                    stopWakeWindowTimer()
-                    audioMonitor.stop()
-                    YOLOLiveActivity.stop()
-                    appState.stopMonitoring()
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        stopWakeWindowTimer()
+                        audioMonitor.stop()
+                        YOLOLiveActivity.stop()
+                        appState.stopMonitoring()
+                    }
                 }) {
                     VStack(spacing: 8) {
                         Image(systemName: "chevron.up")
                             .font(.caption)
-                        Text("Stop")
+                        Text("stop")
                             .font(.subheadline)
                     }
                     .foregroundColor(.white.opacity(0.3))
@@ -91,6 +94,7 @@ struct MonitoringView: View {
                 .padding(.bottom, 40)
             }
         }
+        .animation(.easeInOut(duration: 0.6), value: audioMonitor.monitoringState)
         .task {
             await startMonitoringAsync()
         }
@@ -100,41 +104,45 @@ struct MonitoringView: View {
             case .idle:
                 break
             case .calibrating:
-                YOLOLiveActivity.updateStatus("Calibrating...")
+                YOLOLiveActivity.updateStatus("calibrating...")
             case .listening:
-                YOLOLiveActivity.updateStatus("Listening...")
+                YOLOLiveActivity.updateStatus("listening...")
             }
         }
         .onReceive(audioMonitor.$didTrigger) { triggered in
             if triggered {
-                print("🚨 Trigger received, stopping monitor and switching to alarm")
-                stopWakeWindowTimer()
-                audioMonitor.stop()
-                YOLOLiveActivity.triggerAlarm(message: appState.settings.tagline)
-                appState.triggerAlarm()
+                print("🚨 Audio trigger received, stopping monitors and switching to alarm")
+                triggerAlarm()
+            }
+        }
+        .onReceive(motionMonitor.$didTrigger) { triggered in
+            if triggered {
+                print("🚨 Motion trigger received, stopping monitors and switching to alarm")
+                triggerAlarm()
             }
         }
         .onDisappear {
             // Clean up when view disappears
             stopWakeWindowTimer()
             audioMonitor.stop()
+            motionMonitor.stop()
         }
     }
 
     private var timeString: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "h:mm a"
-        return formatter.string(from: currentTime)
+        return formatter.string(from: currentTime).lowercased()
     }
 
     private var statusText: String {
         switch audioMonitor.monitoringState {
         case .idle:
-            return "Waiting"
+            return "waiting"
         case .calibrating:
-            return "Calibrating..."
+            return "calibrating..."
         case .listening:
-            return "Listening"
+            return "listening"
         }
     }
 
@@ -153,14 +161,14 @@ struct MonitoringView: View {
         guard !hasStarted else { return }
         hasStarted = true
 
-        audioMonitor.sensitivityOffset = appState.settings.sensitivityOffset
+        audioMonitor.sensitivityMultiplier = appState.settings.sensitivityMultiplier
 
         // Start audio engine NOW while device is unlocked
         // This ensures the audio session is established before the device locks
         audioMonitor.start()
 
         // Start Live Activity
-        YOLOLiveActivity.start(wakeWindow: appState.wakeWindowFormatted)
+        YOLOLiveActivity.start(wakeWindow: appState.wakeWindowFormatted, theme: appState.settings.colorTheme)
 
         // Start wake window timer
         startWakeWindowTimer()
@@ -196,13 +204,25 @@ struct MonitoringView: View {
             audioMonitor.startCalibration()
         }
 
+        // Start motion monitoring when calibration completes and we're listening
+        if audioMonitor.monitoringState.isListening &&
+           appState.settings.motionDetectionEnabled &&
+           !motionMonitor.isMonitoring {
+            motionMonitor.start()
+        }
+
         // Fallback alarm at end time
         if now >= windowEnd && appState.currentScreen == .monitoring {
-            stopWakeWindowTimer()
-            audioMonitor.stop()
-            YOLOLiveActivity.triggerAlarm(message: appState.settings.tagline)
-            appState.triggerAlarm()
+            triggerAlarm()
         }
+    }
+
+    private func triggerAlarm() {
+        stopWakeWindowTimer()
+        audioMonitor.stop()
+        motionMonitor.stop()
+        YOLOLiveActivity.triggerAlarm(message: appState.settings.tagline)
+        appState.triggerAlarm()
     }
 }
 

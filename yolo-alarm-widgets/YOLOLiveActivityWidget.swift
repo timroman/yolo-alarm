@@ -12,28 +12,67 @@ struct YOLOLiveActivityWidget: Widget {
                 // Expanded view
                 DynamicIslandExpandedRegion(.leading) {
                     Image(systemName: context.state.isAlarming ? "bell.fill" : "alarm")
-                        .foregroundColor(context.state.isAlarming ? .yellow : .white)
+                        .foregroundColor(.white)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(context.state.isAlarming ? "😊" : context.state.wakeWindow)
-                        .font(.caption.bold())
-                        .foregroundColor(context.state.isAlarming ? .yellow : .white)
+                    if context.state.isAlarming {
+                        Text("😊")
+                            .font(.caption.bold())
+                    } else {
+                        Text(context.state.wakeWindow)
+                            .font(.caption.bold())
+                            .foregroundColor(.white)
+                    }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     Text(context.state.message)
                         .font(.caption2)
-                        .foregroundColor(context.state.isAlarming ? .white : .gray)
+                        .foregroundColor(context.state.isAlarming ? context.state.accentColor : .gray)
                 }
             } compactLeading: {
                 Image(systemName: context.state.isAlarming ? "bell.fill" : "alarm")
-                    .foregroundColor(context.state.isAlarming ? .yellow : .white)
+                    .foregroundColor(.white)
             } compactTrailing: {
-                Image(systemName: context.state.isAlarming ? "exclamationmark.circle.fill" : "waveform")
-                    .foregroundColor(context.state.isAlarming ? .yellow : .green)
+                if context.state.isAlarming {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .foregroundColor(context.state.accentColor)
+                } else {
+                    AudioLevelBars(level: context.state.audioLevel, accentColor: context.state.accentColor)
+                }
             } minimal: {
                 Image(systemName: context.state.isAlarming ? "bell.fill" : "alarm")
-                    .foregroundColor(context.state.isAlarming ? .yellow : .white)
+                    .foregroundColor(.white)
             }
+        }
+    }
+}
+
+struct AudioLevelBars: View {
+    let level: Double
+    let accentColor: Color
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<4, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(barColor(for: index))
+                    .frame(width: 3, height: barHeight(for: index))
+            }
+        }
+        .frame(height: 16)
+    }
+
+    private func barHeight(for index: Int) -> CGFloat {
+        let heights: [CGFloat] = [6, 10, 14, 16]
+        return heights[index]
+    }
+
+    private func barColor(for index: Int) -> Color {
+        let threshold = Double(index + 1) / 4.0
+        if level >= threshold {
+            return accentColor
+        } else {
+            return .white.opacity(0.3)
         }
     }
 }
@@ -44,21 +83,61 @@ struct LockScreenView: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(context.state.isAlarming ? "It's time to wake up 😊" : "Alarm \(context.state.wakeWindow)")
-                    .font(.headline.bold())
-                    .foregroundColor(context.state.isAlarming ? .yellow : .white)
-                Text(context.state.message)
-                    .font(.subheadline)
-                    .foregroundColor(context.state.isAlarming ? .white : .gray)
+                if context.state.isAlarming {
+                    Text(context.state.message)
+                        .font(.headline.bold())
+                        .foregroundColor(.white)
+                } else {
+                    Text("alarm \(context.state.wakeWindow)")
+                        .font(.headline.bold())
+                        .foregroundColor(.white)
+                    Text(context.state.message)
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
             }
 
             Spacer()
 
-            Image(systemName: context.state.isAlarming ? "bell.fill" : "waveform")
-                .font(.title)
-                .foregroundColor(context.state.isAlarming ? .yellow : .white.opacity(0.5))
+            if context.state.isAlarming {
+                Image(systemName: "bell.fill")
+                    .font(.title)
+                    .foregroundColor(.white)
+            } else {
+                AudioLevelBarsLarge(level: context.state.audioLevel, accentColor: context.state.accentColor)
+            }
         }
         .padding()
         .background(Color.black.opacity(0.8))
+    }
+}
+
+struct AudioLevelBarsLarge: View {
+    let level: Double
+    let accentColor: Color
+
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(0..<5, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(barColor(for: index))
+                    .frame(width: 4, height: barHeight(for: index))
+            }
+        }
+        .frame(height: 28)
+    }
+
+    private func barHeight(for index: Int) -> CGFloat {
+        let heights: [CGFloat] = [8, 12, 18, 24, 28]
+        return heights[index]
+    }
+
+    private func barColor(for index: Int) -> Color {
+        let threshold = Double(index + 1) / 5.0
+        if level >= threshold {
+            return accentColor
+        } else {
+            return .white.opacity(0.3)
+        }
     }
 }

@@ -30,6 +30,7 @@
 		B016B554B1FA5D879633CDE8 /* YOLOActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67388184290D327DF4202190 /* YOLOActivityAttributes.swift */; };
 		B77939E82A7A079B93E585DD /* MonitoringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C45EA2221E8D665D144A8F9 /* MonitoringView.swift */; };
 		E8EF3F4C291CB2B8A982E71C /* AudioMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7001B0E502069E2604A24C42 /* AudioMonitor.swift */; };
+		F1A2B3C4D5E6F7890A1B2C3D /* MotionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5C /* MotionMonitor.swift */; };
 		FFE37C485DC0D3F85388A677 /* ocean_waves.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 797B9D25A2BEE8FD51B75A0C /* ocean_waves.mp3 */; };
 /* End PBXBuildFile section */
 
@@ -74,6 +75,7 @@
 		68898C605615624FA534CAA4 /* YOLOLiveActivityWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YOLOLiveActivityWidget.swift; sourceTree = "<group>"; };
 		7001B0E502069E2604A24C42 /* AudioMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMonitor.swift; sourceTree = "<group>"; };
 		797B9D25A2BEE8FD51B75A0C /* ocean_waves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = ocean_waves.mp3; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5C /* MotionMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionMonitor.swift; sourceTree = "<group>"; };
 		9665A969A3041D69DF0B2357 /* AppGradient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGradient.swift; sourceTree = "<group>"; };
 		9E78B708BA69D23CA1B4AE33 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		ACE30BDE1C735E9B187E46F7 /* yolo-logo-white.svg */ = {isa = PBXFileReference; lastKnownFileType = text; path = "yolo-logo-white.svg"; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 			children = (
 				7001B0E502069E2604A24C42 /* AudioMonitor.swift */,
 				D1210B3E6A7ACD598E37BE8B /* CustomSoundManager.swift */,
+				A1B2C3D4E5F60718293A4B5C /* MotionMonitor.swift */,
 				620B1172DBDCB985BA0B192D /* YOLOLiveActivity.swift */,
 			);
 			path = Services;
@@ -315,6 +318,7 @@
 				E8EF3F4C291CB2B8A982E71C /* AudioMonitor.swift in Sources */,
 				0D16690200072F5519295FDE /* ContentView.swift in Sources */,
 				811E23103498143CC52F85C0 /* CustomSoundManager.swift in Sources */,
+				F1A2B3C4D5E6F7890A1B2C3D /* MotionMonitor.swift in Sources */,
 				B77939E82A7A079B93E585DD /* MonitoringView.swift in Sources */,
 				3ABE2E0E0D02C91896328456 /* OnboardingView.swift in Sources */,
 				17AC2370DAB3F2A88C56D2D2 /* SettingsView.swift in Sources */,

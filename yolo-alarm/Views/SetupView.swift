@@ -28,30 +28,32 @@ struct SetupView: View {
 
             // Wake window picker
             VStack(spacing: 24) {
-                Text("Wake Window")
+                Text("wake window")
                     .font(.headline)
                     .foregroundColor(.gray)
 
                 HStack(spacing: 20) {
                     VStack(spacing: 8) {
-                        Text("Earliest")
+                        Text("earliest")
                             .font(.caption)
                             .foregroundColor(.gray)
                         DatePicker("", selection: $appState.settings.wakeWindowStart, displayedComponents: .hourAndMinute)
                             .labelsHidden()
                             .colorScheme(.dark)
+                            .textCase(.lowercase)
                     }
 
                     Text("to")
                         .foregroundColor(.gray)
 
                     VStack(spacing: 8) {
-                        Text("Latest")
+                        Text("latest")
                             .font(.caption)
                             .foregroundColor(.gray)
                         DatePicker("", selection: $appState.settings.wakeWindowEnd, displayedComponents: .hourAndMinute)
                             .labelsHidden()
                             .colorScheme(.dark)
+                            .textCase(.lowercase)
                     }
                 }
             }
@@ -63,10 +65,12 @@ struct SetupView: View {
 
             // Start button
             Button(action: {
-                appState.recalculateWakeWindow()
-                appState.startMonitoring()
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    appState.recalculateWakeWindow()
+                    appState.startMonitoring()
+                }
             }) {
-                Text("Start")
+                Text("start")
                     .font(.title2.bold())
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
@@ -77,10 +81,14 @@ struct SetupView: View {
             .padding(.horizontal, 40)
 
             // Settings button
-            Button(action: { showingSettings = true }) {
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showingSettings = true
+                }
+            }) {
                 HStack {
                     Image(systemName: "gearshape")
-                    Text("Settings")
+                    Text("settings")
                 }
                 .foregroundColor(.gray)
             }
@@ -90,6 +98,7 @@ struct SetupView: View {
         }
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+                .presentationDragIndicator(.visible)
         }
     }
 }

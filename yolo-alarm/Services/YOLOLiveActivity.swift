@@ -1,21 +1,33 @@
 import ActivityKit
 import Foundation
+import SwiftUI
 
 enum YOLOLiveActivity {
     private static var currentActivity: Activity<YOLOActivityAttributes>?
+    private static var accentColor: (red: Double, green: Double, blue: Double) = (0.95, 0.6, 0.4) // Default sunset
+    private static var currentWakeWindow: String = ""
 
-    static func start(wakeWindow: String) {
+    static func start(wakeWindow: String, theme: ColorTheme) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
             print("Live Activities not enabled")
             return
         }
+
+        // Store the accent color and wake window for updates
+        let color = theme.accentColorComponents
+        accentColor = color
+        currentWakeWindow = wakeWindow
 
         let attributes = YOLOActivityAttributes(startTime: Date())
         let state = YOLOActivityAttributes.ContentState(
             wakeWindow: wakeWindow,
             isActive: true,
             isAlarming: false,
-            message: "Waiting..."
+            message: "waiting...",
+            accentColorRed: color.red,
+            accentColorGreen: color.green,
+            accentColorBlue: color.blue,
+            audioLevel: 0.0
         )
 
         do {
@@ -38,7 +50,11 @@ enum YOLOLiveActivity {
             wakeWindow: activity.content.state.wakeWindow,
             isActive: true,
             isAlarming: false,
-            message: status
+            message: status,
+            accentColorRed: accentColor.red,
+            accentColorGreen: accentColor.green,
+            accentColorBlue: accentColor.blue,
+            audioLevel: activity.content.state.audioLevel
         )
 
         Task {
@@ -49,12 +65,37 @@ enum YOLOLiveActivity {
         }
     }
 
+    static func updateAudioLevel(_ level: Double, status: String) {
+        guard let activity = currentActivity else { return }
+
+        let state = YOLOActivityAttributes.ContentState(
+            wakeWindow: currentWakeWindow,
+            isActive: true,
+            isAlarming: false,
+            message: status,
+            accentColorRed: accentColor.red,
+            accentColorGreen: accentColor.green,
+            accentColorBlue: accentColor.blue,
+            audioLevel: level
+        )
+
+        Task {
+            await activity.update(
+                ActivityContent(state: state, staleDate: nil)
+            )
+        }
+    }
+
     static func triggerAlarm(message: String) {
         let state = YOLOActivityAttributes.ContentState(
             wakeWindow: "",
             isActive: true,
             isAlarming: true,
-            message: message
+            message: message,
+            accentColorRed: accentColor.red,
+            accentColorGreen: accentColor.green,
+            accentColorBlue: accentColor.blue,
+            audioLevel: 1.0
         )
 
         Task {
@@ -70,7 +111,11 @@ enum YOLOLiveActivity {
             wakeWindow: "",
             isActive: false,
             isAlarming: false,
-            message: ""
+            message: "",
+            accentColorRed: accentColor.red,
+            accentColorGreen: accentColor.green,
+            accentColorBlue: accentColor.blue,
+            audioLevel: 0.0
         )
 
         Task {

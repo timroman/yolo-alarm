@@ -4,7 +4,7 @@ import Combine
 enum MonitoringState: Equatable {
     case idle
     case calibrating(startTime: Date)
-    case listening(baseline: Float)
+    case listening(baseline: Float, stdDev: Float, threshold: Float)
 
     static func == (lhs: MonitoringState, rhs: MonitoringState) -> Bool {
         switch (lhs, rhs) {
@@ -12,8 +12,8 @@ enum MonitoringState: Equatable {
             return true
         case (.calibrating, .calibrating):
             return true
-        case (.listening(let l), .listening(let r)):
-            return l == r
+        case (.listening(let lb, let ls, let lt), .listening(let rb, let rs, let rt)):
+            return lb == rb && ls == rs && lt == rt
         default:
             return false
         }
@@ -30,7 +30,17 @@ enum MonitoringState: Equatable {
     }
 
     var baseline: Float? {
-        if case .listening(let baseline) = self { return baseline }
+        if case .listening(let baseline, _, _) = self { return baseline }
+        return nil
+    }
+
+    var standardDeviation: Float? {
+        if case .listening(_, let stdDev, _) = self { return stdDev }
+        return nil
+    }
+
+    var threshold: Float? {
+        if case .listening(_, _, let threshold) = self { return threshold }
         return nil
     }
 }
@@ -42,10 +52,10 @@ class AudioMonitor: ObservableObject {
     @Published var monitoringState: MonitoringState = .idle
     @Published var calibrationProgress: Double = 0.0
 
-    var sensitivityOffset: Float = 9.0  // Default medium (dB above baseline)
+    // Sensitivity multiplier for standard deviation (2.0 = most sensitive, 5.0 = least sensitive)
+    var sensitivityMultiplier: Float = 3.5  // Default medium
 
     private var audioEngine: AVAudioEngine?
-    private var silentPlayer: AVAudioPlayer?
     private var isRunning = false
 
     // Thread-safe calibration state (accessed from audio thread)
@@ -54,12 +64,21 @@ class AudioMonitor: ObservableObject {
     private var _calibrationStartTime: Date?
     private var _isCalibrating = false
     private var _baseline: Float?
+    private var _standardDeviation: Float?
+    private var _threshold: Float?
     private let calibrationDuration: TimeInterval = 30.0
     private var _didTransitionToListening = false
+
+    // Minimum standard deviation floor to prevent over-sensitivity in very stable environments
+    private let minStandardDeviation: Float = 3.0
 
     // Require sustained noise before triggering
     private var consecutiveTriggerCount = 0
     private let requiredConsecutiveTriggers = 3  // Must exceed threshold 3 times in a row
+
+    // Throttle Live Activity updates
+    private var lastLiveActivityUpdate: Date = .distantPast
+    private let liveActivityUpdateInterval: TimeInterval = 2.0  // Update every 2 seconds
 
     func start() {
         guard !isRunning else {
@@ -191,39 +210,9 @@ class AudioMonitor: ObservableObject {
             try audioEngine.start()
             isRunning = true
             consecutiveTriggerCount = 0
-            startSilentAudio()
             print("🎤 Audio engine started successfully!")
         } catch {
             print("❌ Failed to start audio engine: \(error)")
-        }
-    }
-
-    private func startSilentAudio() {
-        // Use one of the existing alarm sounds at zero volume to keep audio session alive
-        // This ensures the "audio" background mode keeps the app running
-        let soundNames = ["gentle_chime", "soft_bells", "ocean_waves"]
-        var soundURL: URL?
-
-        for name in soundNames {
-            if let url = Bundle.main.url(forResource: name, withExtension: "mp3") {
-                soundURL = url
-                break
-            }
-        }
-
-        guard let url = soundURL else {
-            print("⚠️ No audio file found for background support")
-            return
-        }
-
-        do {
-            silentPlayer = try AVAudioPlayer(contentsOf: url)
-            silentPlayer?.numberOfLoops = -1  // Loop forever
-            silentPlayer?.volume = 0.0  // Silent
-            silentPlayer?.play()
-            print("🔇 Silent audio started for background support")
-        } catch {
-            print("⚠️ Failed to start silent audio: \(error)")
         }
     }
 
@@ -242,7 +231,6 @@ class AudioMonitor: ObservableObject {
             do {
                 try AVAudioSession.sharedInstance().setActive(true)
                 try audioEngine?.start()
-                silentPlayer?.play()
                 print("🎤 Audio engine restarted after interruption")
             } catch {
                 print("❌ Failed to restart after interruption: \(error)")
@@ -258,20 +246,18 @@ class AudioMonitor: ObservableObject {
         _calibrationStartTime = Date()
         _isCalibrating = true
         _baseline = nil
+        _standardDeviation = nil
+        _threshold = nil
         _didTransitionToListening = false
         calibrationLock.unlock()
 
         calibrationProgress = 0.0
         monitoringState = .calibrating(startTime: Date())
-        print("🎤 Starting 30-second calibration...")
+        print("🎤 Starting 30-second calibration (statistical analysis)...")
     }
 
     func stop() {
         guard isRunning else { return }
-
-        // Stop silent player first
-        silentPlayer?.stop()
-        silentPlayer = nil
 
         // Remove notification observer
         NotificationCenter.default.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
@@ -289,6 +275,8 @@ class AudioMonitor: ObservableObject {
         _calibrationStartTime = nil
         _isCalibrating = false
         _baseline = nil
+        _standardDeviation = nil
+        _threshold = nil
         _didTransitionToListening = false
         calibrationLock.unlock()
 
@@ -340,11 +328,24 @@ class AudioMonitor: ObservableObject {
                 self.monitoringState = newState
                 // Update Live Activity when state changes
                 if newState.isListening {
-                    YOLOLiveActivity.updateStatus("Listening...")
+                    YOLOLiveActivity.updateStatus("listening...")
                 }
             }
             if result.shouldTrigger {
                 self.didTrigger = true
+            }
+
+            // Throttled audio level update for Live Activity
+            if case .listening(_, _, let threshold) = self.monitoringState {
+                let now = Date()
+                if now.timeIntervalSince(self.lastLiveActivityUpdate) >= self.liveActivityUpdateInterval {
+                    self.lastLiveActivityUpdate = now
+                    // Calculate level as ratio of current to threshold (0.0 to 1.0+)
+                    // Normalize so baseline is ~0.2 and threshold is 1.0
+                    let normalizedLevel = Double((decibels + 60) / (threshold + 60))
+                    let clampedLevel = max(0.0, min(1.0, normalizedLevel))
+                    YOLOLiveActivity.updateAudioLevel(clampedLevel, status: "listening...")
+                }
             }
         }
     }
@@ -361,7 +362,7 @@ class AudioMonitor: ObservableObject {
 
         calibrationLock.lock()
         let isCalibrating = _isCalibrating
-        let baseline = _baseline
+        let threshold = _threshold
         let startTime = _calibrationStartTime
         let alreadyTransitioned = _didTransitionToListening
         calibrationLock.unlock()
@@ -380,35 +381,52 @@ class AudioMonitor: ObservableObject {
 
             // Check if calibration is complete
             if elapsed >= calibrationDuration && sampleCount > 0 {
-                let calculatedBaseline = samples.reduce(0, +) / Float(sampleCount)
+                // Calculate mean (baseline)
+                let mean = samples.reduce(0, +) / Float(sampleCount)
+
+                // Calculate standard deviation
+                let squaredDifferences = samples.map { ($0 - mean) * ($0 - mean) }
+                let variance = squaredDifferences.reduce(0, +) / Float(sampleCount)
+                let rawStdDev = sqrt(variance)
+
+                // Apply minimum floor to prevent over-sensitivity in very stable environments
+                let stdDev = max(rawStdDev, minStandardDeviation)
+
+                // Calculate threshold: mean + (multiplier × stdDev)
+                let calculatedThreshold = mean + (sensitivityMultiplier * stdDev)
 
                 calibrationLock.lock()
                 _isCalibrating = false
-                _baseline = calculatedBaseline
+                _baseline = mean
+                _standardDeviation = stdDev
+                _threshold = calculatedThreshold
                 _didTransitionToListening = true
                 calibrationLock.unlock()
 
-                result.newState = .listening(baseline: calculatedBaseline)
-                print("🎤 Calibration complete. Baseline: \(calculatedBaseline) dB, Threshold: \(calculatedBaseline + sensitivityOffset) dB")
+                result.newState = .listening(baseline: mean, stdDev: stdDev, threshold: calculatedThreshold)
+                print("🎤 Calibration complete (statistical analysis)")
+                print("   Baseline: \(String(format: "%.1f", mean)) dB")
+                print("   Std Dev: \(String(format: "%.1f", rawStdDev)) dB (using \(String(format: "%.1f", stdDev)) dB with floor)")
+                print("   Multiplier: \(String(format: "%.1f", sensitivityMultiplier))×")
+                print("   Threshold: \(String(format: "%.1f", calculatedThreshold)) dB")
 
                 // Update Live Activity immediately from background thread
-                YOLOLiveActivity.updateStatus("Listening...")
+                YOLOLiveActivity.updateStatus("listening...")
             }
-        } else if let currentBaseline = baseline {
+        } else if let currentThreshold = threshold {
             // Update Live Activity on first listen after calibration (in case main actor was slow)
             if !alreadyTransitioned {
                 calibrationLock.lock()
                 _didTransitionToListening = true
                 calibrationLock.unlock()
-                YOLOLiveActivity.updateStatus("Listening...")
+                YOLOLiveActivity.updateStatus("listening...")
             }
 
-            // Listening mode - check if noise exceeds baseline + offset
-            let threshold = currentBaseline + sensitivityOffset
-            if level > threshold {
+            // Listening mode - check if noise exceeds calculated threshold
+            if level > currentThreshold {
                 consecutiveTriggerCount += 1
                 if consecutiveTriggerCount >= requiredConsecutiveTriggers {
-                    print("🎤 Triggered! Level: \(level) dB exceeded threshold: \(threshold) dB")
+                    print("🎤 Triggered! Level: \(String(format: "%.1f", level)) dB exceeded threshold: \(String(format: "%.1f", currentThreshold)) dB")
                     result.shouldTrigger = true
                 }
             } else {

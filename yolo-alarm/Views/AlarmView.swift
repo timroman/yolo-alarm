@@ -5,8 +5,9 @@ import CoreHaptics
 struct AlarmView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var alarmPlayer = AlarmPlayer()
+    @StateObject private var hapticManager = HapticManager()
     @State private var currentTime = Date()
-    @State private var hapticEngine: CHHapticEngine?
+    @State private var appeared = false
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -19,22 +20,28 @@ struct AlarmView: View {
 
                 // Current time
                 Text(timeString)
-                    .font(.system(size: 80, weight: .light, design: .rounded))
+                    .font(.system(size: 64, weight: .light, design: .rounded))
                     .foregroundColor(.white)
+                    .opacity(appeared ? 1 : 0)
 
                 Text(appState.settings.tagline)
                     .font(.title2)
                     .foregroundColor(.white.opacity(0.7))
+                    .padding(.horizontal, 48)
+                    .multilineTextAlignment(.center)
+                    .opacity(appeared ? 1 : 0)
 
                 Spacer()
 
                 // Dismiss button
                 Button(action: {
-                    alarmPlayer.stop()
-                    YOLOLiveActivity.stop()
-                    appState.dismissAlarm()
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        alarmPlayer.stop()
+                        YOLOLiveActivity.stop()
+                        appState.dismissAlarm()
+                    }
                 }) {
-                    Text("Stop")
+                    Text("stop")
                         .font(.title.bold())
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
@@ -44,109 +51,234 @@ struct AlarmView: View {
                 }
                 .padding(.horizontal, 40)
                 .padding(.bottom, 60)
+                .opacity(appeared ? 1 : 0)
             }
         }
-        .task {
-            // Small delay to let audio session from monitoring settle
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-            alarmPlayer.play(
-                sound: appState.settings.selectedSound,
-                customSoundId: appState.settings.customSoundId,
-                volume: appState.settings.volume
-            )
+        .onAppear {
+            withAnimation(.easeIn(duration: 1.5)) {
+                appeared = true
+            }
+
+            // Start audio after small delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                alarmPlayer.play(
+                    sound: appState.settings.selectedSound,
+                    customSoundId: appState.settings.customSoundId,
+                    volume: appState.settings.volume
+                )
+            }
+
+            // Start haptics after audio session is configured
             if appState.settings.hapticEnabled {
-                startHaptics(type: appState.settings.hapticType)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    hapticManager.start(type: appState.settings.hapticType, targetIntensity: appState.settings.hapticIntensity)
+                }
             }
         }
         .onDisappear {
-            stopHaptics()
+            hapticManager.stop()
         }
         .onReceive(timer) { _ in
             currentTime = Date()
         }
     }
 
-    private func startHaptics(type: HapticType) {
-        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+    private var timeString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter.string(from: currentTime).lowercased()
+    }
+}
+
+@MainActor
+class HapticManager: ObservableObject {
+    private var hapticEngine: CHHapticEngine?
+    private var hapticPlayer: CHHapticPatternPlayer?
+    private var loopTimer: Timer?
+    private var intensityRampTimer: Timer?
+    private var currentIntensity: Float = 0.3
+    private var targetIntensity: Float = 1.0
+    private var hapticType: HapticType = .heartbeat
+    private let rampDuration: Float = 60.0
+    private let patternDuration: TimeInterval = 10.0 // Loop every 10 seconds
+    private var isRunning = false
+
+    func start(type: HapticType, targetIntensity: Float) {
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else {
+            print("📳 Haptics not supported on this device")
+            return
+        }
+
+        self.hapticType = type
+        self.targetIntensity = targetIntensity
+        self.currentIntensity = max(0.3, targetIntensity * 0.3) // Start at 30% of target, minimum 0.3
+        self.isRunning = true
 
         do {
             hapticEngine = try CHHapticEngine()
-            try hapticEngine?.start()
+            hapticEngine?.isAutoShutdownEnabled = false
+            hapticEngine?.playsHapticsOnly = true
 
-            let events = createHapticEvents(for: type)
-            let pattern = try CHHapticPattern(events: events, parameters: [])
-            let player = try hapticEngine?.makePlayer(with: pattern)
-            try player?.start(atTime: 0)
-            print("📳 Haptic feedback started: \(type.displayName)")
+            hapticEngine?.stoppedHandler = { [weak self] reason in
+                print("📳 Haptic engine stopped: \(reason.rawValue)")
+                Task { @MainActor in
+                    guard let self = self, self.isRunning else { return }
+                    try? self.hapticEngine?.start()
+                    self.playPattern()
+                }
+            }
+
+            hapticEngine?.resetHandler = { [weak self] in
+                print("📳 Haptic engine reset")
+                Task { @MainActor in
+                    guard let self = self, self.isRunning else { return }
+                    try? self.hapticEngine?.start()
+                    self.playPattern()
+                }
+            }
+
+            try hapticEngine?.start()
+            print("📳 Haptic engine started")
+
+            // Test haptic to verify device supports it
+            let testEvent = CHHapticEvent(
+                eventType: .hapticTransient,
+                parameters: [
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: 1.0),
+                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 1.0)
+                ],
+                relativeTime: 0
+            )
+            let testPattern = try CHHapticPattern(events: [testEvent], parameters: [])
+            let testPlayer = try hapticEngine?.makePlayer(with: testPattern)
+            try testPlayer?.start(atTime: CHHapticTimeImmediate)
+            print("📳 Test haptic fired")
+
+            // Play first pattern
+            playPattern()
+
+            // Set up looping timer
+            loopTimer = Timer.scheduledTimer(withTimeInterval: patternDuration, repeats: true) { [weak self] _ in
+                Task { @MainActor in
+                    self?.playPattern()
+                }
+            }
+
+            // Start intensity ramp
+            startIntensityRamp()
+
+            print("📳 Haptic feedback started: \(type.displayName), ramping to intensity \(targetIntensity)")
         } catch {
-            print("Haptic error: \(error)")
+            print("📳 Haptic error: \(error)")
         }
     }
 
-    private func createHapticEvents(for type: HapticType) -> [CHHapticEvent] {
+    private func playPattern() {
+        guard isRunning, let engine = hapticEngine else {
+            print("📳 playPattern skipped: isRunning=\(isRunning), engine=\(String(describing: hapticEngine))")
+            return
+        }
+
+        do {
+            let events = createHapticEvents(for: hapticType, intensity: currentIntensity)
+            let pattern = try CHHapticPattern(events: events, parameters: [])
+            hapticPlayer = try engine.makePlayer(with: pattern)
+            try hapticPlayer?.start(atTime: CHHapticTimeImmediate)
+            print("📳 Pattern playing with intensity: \(currentIntensity)")
+        } catch {
+            print("📳 Failed to play haptic pattern: \(error)")
+        }
+    }
+
+    private func startIntensityRamp() {
+        let updateInterval: TimeInterval = 2.0
+        let totalSteps = Int(rampDuration / Float(updateInterval))
+        let startIntensity = currentIntensity // Preserve the starting intensity
+        var currentStep = 0
+
+        intensityRampTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] timer in
+            Task { @MainActor in
+                guard let self = self, self.isRunning else {
+                    timer.invalidate()
+                    return
+                }
+
+                currentStep += 1
+                let progress = Float(currentStep) / Float(totalSteps)
+                // Ramp from startIntensity to targetIntensity
+                self.currentIntensity = startIntensity + (self.targetIntensity - startIntensity) * progress
+
+                if currentStep >= totalSteps {
+                    self.currentIntensity = self.targetIntensity
+                    print("📳 Haptic intensity ramp complete: \(self.targetIntensity)")
+                    timer.invalidate()
+                    self.intensityRampTimer = nil
+                }
+            }
+        }
+    }
+
+    private func createHapticEvents(for type: HapticType, intensity: Float) -> [CHHapticEvent] {
         var events: [CHHapticEvent] = []
+        // Ensure minimum intensity of 0.5 for all patterns to be noticeable
+        let effectiveIntensity = max(0.5, intensity)
 
         switch type {
         case .heartbeat:
-            // Double-tap pattern like a heartbeat
-            for i in 0..<30 {
-                let baseTime = Double(i) * 1.5
-                // First beat
+            for i in 0..<7 {
+                let baseTime = Double(i) * 1.4
                 events.append(CHHapticEvent(
                     eventType: .hapticTransient,
                     parameters: [
-                        CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.7),
-                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5)
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: effectiveIntensity),
+                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.6)
                     ],
                     relativeTime: baseTime
                 ))
-                // Second beat (slightly softer)
                 events.append(CHHapticEvent(
                     eventType: .hapticTransient,
                     parameters: [
-                        CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.5),
-                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.4)
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: effectiveIntensity * 0.8),
+                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5)
                     ],
                     relativeTime: baseTime + 0.2
                 ))
             }
 
         case .pulse:
-            // Gentle continuous pulse
-            for i in 0..<60 {
+            // Gentle continuous pulses
+            for i in 0..<10 {
                 events.append(CHHapticEvent(
                     eventType: .hapticContinuous,
                     parameters: [
-                        CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.4),
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: effectiveIntensity * 0.8),
                         CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.2)
                     ],
                     relativeTime: Double(i) * 1.0,
-                    duration: 0.5
+                    duration: 0.6
                 ))
             }
 
         case .escalating:
-            // Gradually intensifying haptics
-            for i in 0..<40 {
-                let intensity = min(1.0, 0.2 + (Float(i) * 0.02))
+            for i in 0..<7 {
+                let escalatingIntensity = max(0.5, 0.4 + (effectiveIntensity * Float(i) / 7.0))
                 events.append(CHHapticEvent(
                     eventType: .hapticTransient,
                     parameters: [
-                        CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
-                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5)
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: escalatingIntensity),
+                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.6)
                     ],
-                    relativeTime: Double(i) * 1.5
+                    relativeTime: Double(i) * 1.4
                 ))
             }
 
         case .steady:
-            // Continuous steady vibration with short breaks
-            for i in 0..<30 {
+            for i in 0..<5 {
                 events.append(CHHapticEvent(
                     eventType: .hapticContinuous,
                     parameters: [
-                        CHHapticEventParameter(parameterID: .hapticIntensity, value: 0.6),
-                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.4)
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: effectiveIntensity),
+                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5)
                     ],
                     relativeTime: Double(i) * 2.0,
                     duration: 1.5
@@ -157,15 +289,21 @@ struct AlarmView: View {
         return events
     }
 
-    private func stopHaptics() {
+    func stop() {
+        isRunning = false
+
+        loopTimer?.invalidate()
+        loopTimer = nil
+
+        intensityRampTimer?.invalidate()
+        intensityRampTimer = nil
+
+        try? hapticPlayer?.cancel()
+        hapticPlayer = nil
+
         hapticEngine?.stop()
         hapticEngine = nil
-    }
-
-    private var timeString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        return formatter.string(from: currentTime)
+        print("📳 Haptics stopped")
     }
 }
 

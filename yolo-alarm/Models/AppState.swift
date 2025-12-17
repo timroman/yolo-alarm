@@ -104,8 +104,8 @@ class AppState: ObservableObject {
     var wakeWindowFormatted: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "h:mm a"
-        let start = formatter.string(from: settings.wakeWindowStart)
-        let end = formatter.string(from: settings.wakeWindowEnd)
+        let start = formatter.string(from: settings.wakeWindowStart).lowercased()
+        let end = formatter.string(from: settings.wakeWindowEnd).lowercased()
         return "\(start) - \(end)"
     }
 }

@@ -20,7 +20,7 @@ struct ContentView: View {
                     .transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.8), value: appState.currentScreen)
+        .animation(.easeInOut(duration: 1.0), value: appState.currentScreen)
     }
 }
 

@@ -167,6 +167,18 @@ extension ColorTheme {
         case .coral: return Color(red: 0.95, green: 0.5, blue: 0.5)
         }
     }
+
+    // RGB components for Live Activity (Color isn't Codable)
+    var accentColorComponents: (red: Double, green: Double, blue: Double) {
+        switch self {
+        case .ocean: return (0.2, 0.6, 0.9)
+        case .sunset: return (0.95, 0.6, 0.4)
+        case .forest: return (0.4, 0.8, 0.5)
+        case .lavender: return (0.7, 0.5, 0.9)
+        case .midnight: return (0.5, 0.5, 0.7)
+        case .coral: return (0.95, 0.5, 0.5)
+        }
+    }
 }
 
 #Preview("Ocean") {

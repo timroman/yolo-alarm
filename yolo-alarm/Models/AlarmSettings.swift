@@ -10,24 +10,27 @@ struct AlarmSettings: Codable {
     var tagline: String          // Customizable tagline under YOLO
     var hapticEnabled: Bool
     var hapticType: HapticType
+    var hapticIntensity: Float
     var colorTheme: ColorTheme
+    var motionDetectionEnabled: Bool  // Trigger alarm on device movement
 
     var isUsingCustomSound: Bool {
         customSoundId != nil
     }
 
-    // Convert sensitivity slider (0-1) to decibel offset above baseline
-    // 0.0 = +15 dB above baseline (needs loud noise)
-    // 1.0 = +3 dB above baseline (very sensitive - small sounds)
-    var sensitivityOffset: Float {
-        return 15.0 - (sensitivityValue * 12.0)
+    // Convert sensitivity slider (0-1) to standard deviation multiplier
+    // Uses statistical threshold: baseline + (multiplier × stdDev)
+    // 0.0 = 5.0× stdDev (needs significant deviation from baseline - less sensitive)
+    // 1.0 = 2.0× stdDev (triggers on smaller deviations - more sensitive)
+    var sensitivityMultiplier: Float {
+        return 5.0 - (sensitivityValue * 3.0)
     }
 
     var sensitivityLabel: String {
         switch sensitivityValue {
-        case 0.0..<0.33: return "Low"
-        case 0.33..<0.66: return "Medium"
-        default: return "High"
+        case 0.0..<0.33: return "low"
+        case 0.33..<0.66: return "medium"
+        default: return "high"
         }
     }
 
@@ -44,10 +47,12 @@ struct AlarmSettings: Codable {
             volume: 0.7,
             selectedSound: .gentleChime,
             customSoundId: nil,
-            tagline: "Good Morning",
+            tagline: "good morning",
             hapticEnabled: true,
             hapticType: .heartbeat,
-            colorTheme: .ocean
+            hapticIntensity: 0.7,
+            colorTheme: .ocean,
+            motionDetectionEnabled: true
         )
     }
 }
@@ -64,9 +69,9 @@ enum AlarmSound: String, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .gentleChime: return "Gentle Chime"
-        case .softBells: return "Soft Bells"
-        case .oceanWaves: return "Ocean Waves"
+        case .gentleChime: return "gentle chime"
+        case .softBells: return "soft bells"
+        case .oceanWaves: return "ocean waves"
         }
     }
 
@@ -80,8 +85,8 @@ enum AlarmSound: String, Codable, CaseIterable, Identifiable {
     }
 
     enum SoundCategory: String, CaseIterable {
-        case gentle = "Gentle Tones"
-        case nature = "Nature Sounds"
+        case gentle = "gentle"
+        case nature = "nature"
     }
 }
 
@@ -97,12 +102,12 @@ enum ColorTheme: String, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .ocean: return "Ocean"
-        case .sunset: return "Sunset"
-        case .forest: return "Forest"
-        case .lavender: return "Lavender"
-        case .midnight: return "Midnight"
-        case .coral: return "Coral"
+        case .ocean: return "ocean"
+        case .sunset: return "sunset"
+        case .forest: return "forest"
+        case .lavender: return "lavender"
+        case .midnight: return "midnight"
+        case .coral: return "coral"
         }
     }
 }
@@ -117,19 +122,19 @@ enum HapticType: String, Codable, CaseIterable, Identifiable {
 
     var displayName: String {
         switch self {
-        case .heartbeat: return "Heartbeat"
-        case .pulse: return "Pulse"
-        case .escalating: return "Escalating"
-        case .steady: return "Steady"
+        case .heartbeat: return "heartbeat"
+        case .pulse: return "pulse"
+        case .escalating: return "escalating"
+        case .steady: return "steady"
         }
     }
 
     var description: String {
         switch self {
-        case .heartbeat: return "Rhythmic double-tap pattern"
-        case .pulse: return "Gentle pulsing vibration"
-        case .escalating: return "Gradually intensifying"
-        case .steady: return "Continuous vibration"
+        case .heartbeat: return "rhythmic double-tap pattern"
+        case .pulse: return "gentle pulsing vibration"
+        case .escalating: return "gradually intensifying"
+        case .steady: return "continuous vibration"
         }
     }
 }

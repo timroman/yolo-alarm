@@ -1,6 +1,7 @@
 import SwiftUI
 import AVFoundation
 import UniformTypeIdentifiers
+import CoreHaptics
 
 struct SettingsView: View {
     @EnvironmentObject var appState: AppState
@@ -10,56 +11,53 @@ struct SettingsView: View {
     @State private var showingFilePicker = false
     @State private var importError: String?
     @State private var showingImportError = false
+    @State private var hapticEngine: CHHapticEngine?
+    @State private var hapticPlayer: CHHapticPatternPlayer?
+
+    private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
 
     var body: some View {
         NavigationStack {
             List {
+                // Wake message Section - moved to top
+                Section {
+                    TextField("your motivation", text: $appState.settings.tagline)
+                } header: {
+                    Text("how do you want to start the day?")
+                }
+
                 // Sensitivity Section
                 Section {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Text("Less")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                            Slider(value: $appState.settings.sensitivityValue, in: 0.0...1.0, step: 0.05)
-                            Text("More")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                        }
-                        HStack {
-                            Text(appState.settings.sensitivityLabel)
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text("+\(String(format: "%.0f", appState.settings.sensitivityOffset)) dB")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                        }
+                    HStack {
+                        Text("less")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        Slider(value: $appState.settings.sensitivityValue, in: 0.0...1.0, step: 0.05)
+                        Text("more")
+                            .font(.caption)
+                            .foregroundColor(.gray)
                     }
+
+                    Toggle("motion detection", isOn: $appState.settings.motionDetectionEnabled)
                 } header: {
-                    Text("Noise Sensitivity")
+                    Text("sensitivity")
                 } footer: {
-                    Text("Triggers when sound exceeds background noise by this amount. Higher sensitivity detects smaller sounds.")
+                    if appState.settings.motionDetectionEnabled {
+                        Text("alarm triggers when you move your phone")
+                    }
                 }
 
                 // Volume Section
                 Section {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Image(systemName: "speaker.fill")
-                                .foregroundColor(.gray)
-                            Slider(value: $appState.settings.volume, in: 0.1...1.0, step: 0.05)
-                            Image(systemName: "speaker.wave.3.fill")
-                                .foregroundColor(.gray)
-                        }
-                        Text("\(Int(appState.settings.volume * 100))%")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                    HStack {
+                        Image(systemName: "speaker.fill")
+                            .foregroundColor(.gray)
+                        Slider(value: $appState.settings.volume, in: 0.1...1.0, step: 0.05)
+                        Image(systemName: "speaker.wave.3.fill")
+                            .foregroundColor(.gray)
                     }
                 } header: {
-                    Text("Alarm Volume")
-                } footer: {
-                    Text("This scales with your device volume. For best results, set device volume to max before bed.")
+                    Text("volume")
                 }
 
                 // Sound Selection Section
@@ -87,13 +85,13 @@ struct SettingsView: View {
                     }
 
                     // Custom sounds section
-                    DisclosureGroup("Custom") {
+                    DisclosureGroup("custom") {
                         // Import button
                         Button(action: { showingFilePicker = true }) {
                             HStack {
                                 Image(systemName: "plus.circle.fill")
                                     .foregroundColor(.blue)
-                                Text("Import Sound")
+                                Text("import sound")
                                     .foregroundColor(.blue)
                             }
                         }
@@ -119,35 +117,39 @@ struct SettingsView: View {
                         }
                     }
                 } header: {
-                    Text("Alarm Sound")
-                } footer: {
-                    Text("Tap the play button to preview. Import MP3, WAV, or M4A files.")
+                    Text("sound")
                 }
 
                 // Haptic Section
                 Section {
-                    Toggle("Enable Haptics", isOn: $appState.settings.hapticEnabled)
+                    Toggle("haptics", isOn: $appState.settings.hapticEnabled)
 
                     if appState.settings.hapticEnabled {
-                        Picker("Pattern", selection: $appState.settings.hapticType) {
-                            ForEach(HapticType.allCases) { type in
-                                VStack(alignment: .leading) {
-                                    Text(type.displayName)
-                                }
-                                .tag(type)
-                            }
+                        HStack {
+                            Text("low")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            Slider(value: $appState.settings.hapticIntensity, in: 0.2...1.0, step: 0.1)
+                            Text("high")
+                                .font(.caption)
+                                .foregroundColor(.gray)
                         }
-                        .pickerStyle(.inline)
-                        .labelsHidden()
+
+                        ForEach(HapticType.allCases) { type in
+                            HapticRowView(
+                                type: type,
+                                isSelected: appState.settings.hapticType == type,
+                                onSelect: {
+                                    appState.settings.hapticType = type
+                                },
+                                onPreview: {
+                                    previewHaptic(type, intensity: appState.settings.hapticIntensity)
+                                }
+                            )
+                        }
                     }
                 } header: {
-                    Text("Haptic Feedback")
-                } footer: {
-                    if appState.settings.hapticEnabled {
-                        Text(appState.settings.hapticType.description)
-                    } else {
-                        Text("Vibration patterns to help wake you up.")
-                    }
+                    Text("haptics")
                 }
 
                 // Color Theme Section
@@ -181,23 +183,40 @@ struct SettingsView: View {
                     }
                     .padding(.vertical, 8)
                 } header: {
-                    Text("Color Theme")
+                    Text("theme")
                 }
 
-                // Wake message Section
+                // About Section
                 Section {
-                    TextField("Your motivation", text: $appState.settings.tagline)
-                } header: {
-                    Text("What do you live for?")
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("yolo apps")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+
+                        Text("apps designed for focus, privacy, and what matters. no ads, no subscriptions, no data collection. tools to help you create, reflect, live healthy, and focus on what brings you joy.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
+                        Link(destination: URL(string: "https://yoloapps.com")!) {
+                            HStack {
+                                Text("learn more")
+                                    .font(.caption)
+                                Image(systemName: "arrow.up.right")
+                                    .font(.caption2)
+                            }
+                            .foregroundColor(.blue)
+                        }
+                    }
+                    .padding(.vertical, 4)
                 } footer: {
-                    Text("Displayed when your alarm goes off to start your day.")
+                    Text("version \(appVersion)")
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle("settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
+                    Button("done") {
                         stopPreview()
                         dismiss()
                     }
@@ -228,10 +247,10 @@ struct SettingsView: View {
                 showingImportError = true
             }
         }
-        .alert("Import Error", isPresented: $showingImportError) {
-            Button("OK") { }
+        .alert("import error", isPresented: $showingImportError) {
+            Button("ok") { }
         } message: {
-            Text(importError ?? "Unknown error")
+            Text(importError ?? "unknown error")
         }
     }
 
@@ -311,6 +330,102 @@ struct SettingsView: View {
         previewPlayer?.stop()
         previewPlayer = nil
     }
+
+    private func previewHaptic(_ type: HapticType, intensity: Float) {
+        stopHapticPreview()
+
+        guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+
+        do {
+            hapticEngine = try CHHapticEngine()
+            try hapticEngine?.start()
+
+            let events = createHapticPreviewEvents(for: type, intensity: intensity)
+            let pattern = try CHHapticPattern(events: events, parameters: [])
+            hapticPlayer = try hapticEngine?.makePlayer(with: pattern)
+            try hapticPlayer?.start(atTime: 0)
+
+            // Stop after 3 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [self] in
+                stopHapticPreview()
+            }
+        } catch {
+            print("Haptic preview error: \(error)")
+        }
+    }
+
+    private func createHapticPreviewEvents(for type: HapticType, intensity: Float) -> [CHHapticEvent] {
+        var events: [CHHapticEvent] = []
+
+        switch type {
+        case .heartbeat:
+            for i in 0..<2 {
+                let baseTime = Double(i) * 1.5
+                events.append(CHHapticEvent(
+                    eventType: .hapticTransient,
+                    parameters: [
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
+                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5)
+                    ],
+                    relativeTime: baseTime
+                ))
+                events.append(CHHapticEvent(
+                    eventType: .hapticTransient,
+                    parameters: [
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity * 0.7),
+                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.4)
+                    ],
+                    relativeTime: baseTime + 0.2
+                ))
+            }
+
+        case .pulse:
+            for i in 0..<3 {
+                events.append(CHHapticEvent(
+                    eventType: .hapticContinuous,
+                    parameters: [
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity * 0.6),
+                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.2)
+                    ],
+                    relativeTime: Double(i) * 1.0,
+                    duration: 0.5
+                ))
+            }
+
+        case .escalating:
+            for i in 0..<4 {
+                let escalatingIntensity = min(intensity, 0.2 + (intensity * Float(i) / 4.0))
+                events.append(CHHapticEvent(
+                    eventType: .hapticTransient,
+                    parameters: [
+                        CHHapticEventParameter(parameterID: .hapticIntensity, value: escalatingIntensity),
+                        CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5)
+                    ],
+                    relativeTime: Double(i) * 0.7
+                ))
+            }
+
+        case .steady:
+            events.append(CHHapticEvent(
+                eventType: .hapticContinuous,
+                parameters: [
+                    CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity * 0.85),
+                    CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.4)
+                ],
+                relativeTime: 0,
+                duration: 2.5
+            ))
+        }
+
+        return events
+    }
+
+    private func stopHapticPreview() {
+        try? hapticPlayer?.cancel()
+        hapticPlayer = nil
+        hapticEngine?.stop()
+        hapticEngine = nil
+    }
 }
 
 struct CustomSoundRowView: View {
@@ -366,6 +481,37 @@ struct SoundRowView: View {
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .foregroundColor(isSelected ? .blue : .gray)
                     Text(sound.displayName)
+                        .foregroundColor(.primary)
+                }
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            Button(action: onPreview) {
+                Image(systemName: "play.circle")
+                    .font(.title2)
+                    .foregroundColor(.blue)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+struct HapticRowView: View {
+    let type: HapticType
+    let isSelected: Bool
+    let onSelect: () -> Void
+    let onPreview: () -> Void
+
+    var body: some View {
+        HStack {
+            Button(action: onSelect) {
+                HStack {
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .foregroundColor(isSelected ? .blue : .gray)
+                    Text(type.displayName)
                         .foregroundColor(.primary)
                 }
             }
