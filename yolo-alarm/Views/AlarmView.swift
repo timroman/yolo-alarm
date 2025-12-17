@@ -1,5 +1,5 @@
 import SwiftUI
-import AVFoundation
+@preconcurrency import AVFoundation
 import CoreHaptics
 
 struct AlarmView: View {
@@ -171,10 +171,16 @@ struct AlarmView: View {
 
 @MainActor
 class AlarmPlayer: ObservableObject {
-    private var audioPlayer: AVAudioPlayer?
-    private var volumeTimer: Timer?
+    private var playerA: AVAudioPlayer?
+    private var playerB: AVAudioPlayer?
+    private var activePlayer: AVAudioPlayer? // Currently playing at full volume
+    private var soundURL: URL?
+    private var volumeRampTimer: Timer?
+    private var crossfadeTimer: Timer?
     private var targetVolume: Float = 1.0
+    private var currentVolume: Float = 0.0 // Tracks actual volume during ramp
     private let rampDuration: Float = 60.0 // seconds
+    private let crossfadeDuration: TimeInterval = 1.5 // seconds for crossfade
 
     func play(sound: AlarmSound, customSoundId: UUID?, volume: Float) {
         // Scale down the volume significantly - AVAudioPlayer is very loud
@@ -208,13 +214,23 @@ class AlarmPlayer: ObservableObject {
             return
         }
 
+        self.soundURL = soundURL
+
         do {
-            audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-            audioPlayer?.numberOfLoops = -1 // Loop indefinitely
-            audioPlayer?.volume = 0 // Start at zero
-            audioPlayer?.play()
-            print("🔔 Alarm started, ramping volume over \(rampDuration) seconds")
+            // Initialize both players with the same sound
+            playerA = try AVAudioPlayer(contentsOf: soundURL)
+            playerB = try AVAudioPlayer(contentsOf: soundURL)
+            playerA?.prepareToPlay()
+            playerB?.prepareToPlay()
+
+            // Start player A
+            playerA?.volume = 0
+            playerA?.play()
+            activePlayer = playerA
+
+            print("🔔 Alarm started with crossfade looping, ramping volume over \(rampDuration) seconds")
             startVolumeRamp()
+            scheduleCrossfade()
         } catch {
             print("Failed to play alarm: \(error)")
             playFallbackSound()
@@ -222,38 +238,131 @@ class AlarmPlayer: ObservableObject {
     }
 
     private func startVolumeRamp() {
-        // Update volume every 0.5 seconds over 30 seconds = 60 steps
+        // Update volume every 0.5 seconds over rampDuration
         let updateInterval: TimeInterval = 0.5
         let totalSteps = Int(rampDuration / Float(updateInterval))
         var currentStep = 0
 
-        volumeTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] timer in
+        volumeRampTimer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] timer in
             Task { @MainActor in
-                guard let self = self, let player = self.audioPlayer else {
+                guard let self = self else {
                     timer.invalidate()
                     return
                 }
 
                 currentStep += 1
                 let progress = Float(currentStep) / Float(totalSteps)
-                let newVolume = self.targetVolume * progress
-                player.volume = newVolume
+                self.currentVolume = self.targetVolume * progress
+
+                // Apply to active player (crossfade will handle transitions)
+                if let active = self.activePlayer {
+                    active.volume = self.currentVolume
+                }
 
                 if currentStep >= totalSteps {
-                    player.volume = self.targetVolume
-                    print("🔔 Volume ramp complete: \(Int(self.targetVolume * 100))%")
+                    self.currentVolume = self.targetVolume
+                    print("🔔 Volume ramp complete: \(Int(self.targetVolume * 2000))% of max")
                     timer.invalidate()
-                    self.volumeTimer = nil
+                    self.volumeRampTimer = nil
+                }
+            }
+        }
+    }
+
+    private func scheduleCrossfade() {
+        guard let player = activePlayer, player.duration > crossfadeDuration * 2 else {
+            // Sound too short for crossfade, use simple loop
+            playerA?.numberOfLoops = -1
+            return
+        }
+
+        // Schedule crossfade to start before the track ends
+        let crossfadeStartTime = player.duration - crossfadeDuration
+
+        crossfadeTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
+            Task { @MainActor in
+                guard let self = self, let active = self.activePlayer else {
+                    timer.invalidate()
+                    return
+                }
+
+                // Check if we're near the end of the track
+                if active.currentTime >= crossfadeStartTime {
+                    timer.invalidate()
+                    self.performCrossfade()
+                }
+            }
+        }
+    }
+
+    private func performCrossfade() {
+        guard let soundURL = soundURL else { return }
+
+        // Determine which player is next
+        let outgoingPlayer = activePlayer
+        let incomingPlayer: AVAudioPlayer?
+
+        if activePlayer === playerA {
+            // Reinitialize player B
+            playerB = try? AVAudioPlayer(contentsOf: soundURL)
+            playerB?.prepareToPlay()
+            incomingPlayer = playerB
+        } else {
+            // Reinitialize player A
+            playerA = try? AVAudioPlayer(contentsOf: soundURL)
+            playerA?.prepareToPlay()
+            incomingPlayer = playerA
+        }
+
+        guard let incoming = incomingPlayer else { return }
+
+        // Start incoming player at zero volume
+        incoming.volume = 0
+        incoming.play()
+
+        // Crossfade over crossfadeDuration
+        let steps = 30
+        let stepInterval = crossfadeDuration / Double(steps)
+        var currentStep = 0
+
+        Timer.scheduledTimer(withTimeInterval: stepInterval, repeats: true) { [weak self] timer in
+            Task { @MainActor in
+                guard let self = self else {
+                    timer.invalidate()
+                    return
+                }
+
+                currentStep += 1
+                let progress = Float(currentStep) / Float(steps)
+
+                // Use current volume level (which may still be ramping up)
+                let effectiveVolume = self.currentVolume > 0 ? self.currentVolume : self.targetVolume
+
+                // Fade out outgoing, fade in incoming
+                outgoingPlayer?.volume = effectiveVolume * (1.0 - progress)
+                incoming.volume = effectiveVolume * progress
+
+                if currentStep >= steps {
+                    timer.invalidate()
+                    outgoingPlayer?.stop()
+                    incoming.volume = effectiveVolume
+                    self.activePlayer = incoming
+                    self.scheduleCrossfade() // Schedule next crossfade
                 }
             }
         }
     }
 
     func stop() {
-        volumeTimer?.invalidate()
-        volumeTimer = nil
-        audioPlayer?.stop()
-        audioPlayer = nil
+        volumeRampTimer?.invalidate()
+        volumeRampTimer = nil
+        crossfadeTimer?.invalidate()
+        crossfadeTimer = nil
+        playerA?.stop()
+        playerB?.stop()
+        playerA = nil
+        playerB = nil
+        activePlayer = nil
         print("🔔 Alarm stopped")
 
         // Deactivate audio session

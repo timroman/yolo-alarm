@@ -239,22 +239,11 @@ struct SettingsView: View {
         stopPreview()
 
         guard let url = Bundle.main.url(forResource: sound.rawValue, withExtension: "mp3") else {
+            print("Sound file not found: \(sound.rawValue).mp3")
             return
         }
 
-        do {
-            previewPlayer = try AVAudioPlayer(contentsOf: url)
-            // Scale volume same as alarm playback (5% max)
-            previewPlayer?.volume = appState.settings.volume * 0.05
-            previewPlayer?.play()
-
-            // Stop after 3 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [self] in
-                stopPreview()
-            }
-        } catch {
-            print("Failed to preview sound: \(error)")
-        }
+        playPreviewWithFade(url: url)
     }
 
     private func previewCustomSound(_ sound: CustomSound) {
@@ -262,17 +251,59 @@ struct SettingsView: View {
 
         guard let url = sound.fileURL else { return }
 
+        playPreviewWithFade(url: url)
+    }
+
+    private func playPreviewWithFade(url: URL) {
         do {
+            // Configure audio session for playback
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+            try AVAudioSession.sharedInstance().setActive(true)
+
             previewPlayer = try AVAudioPlayer(contentsOf: url)
-            // Scale volume same as alarm playback (5% max)
-            previewPlayer?.volume = appState.settings.volume * 0.05
+            previewPlayer?.numberOfLoops = -1 // Loop in case sound is shorter than 10s
+            previewPlayer?.volume = 0
             previewPlayer?.play()
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [self] in
+            let targetVolume = appState.settings.volume
+            let fadeDuration: TimeInterval = 1.5
+            let playDuration: TimeInterval = 10.0
+
+            // Fade in
+            fadeVolume(to: targetVolume, duration: fadeDuration)
+
+            // Schedule fade out
+            DispatchQueue.main.asyncAfter(deadline: .now() + playDuration - fadeDuration) { [self] in
+                fadeVolume(to: 0, duration: fadeDuration)
+            }
+
+            // Stop after total duration
+            DispatchQueue.main.asyncAfter(deadline: .now() + playDuration) { [self] in
                 stopPreview()
             }
         } catch {
-            print("Failed to preview custom sound: \(error)")
+            print("Failed to preview sound: \(error)")
+        }
+    }
+
+    private func fadeVolume(to targetVolume: Float, duration: TimeInterval) {
+        guard let player = previewPlayer else { return }
+
+        let steps = 30
+        let stepDuration = duration / Double(steps)
+        let startVolume = player.volume
+        let volumeDelta = targetVolume - startVolume
+        var currentStep = 0
+
+        Timer.scheduledTimer(withTimeInterval: stepDuration, repeats: true) { timer in
+            currentStep += 1
+            let progress = Float(currentStep) / Float(steps)
+            self.previewPlayer?.volume = startVolume + (volumeDelta * progress)
+
+            if currentStep >= steps {
+                timer.invalidate()
+                self.previewPlayer?.volume = targetVolume
+            }
         }
     }
 
